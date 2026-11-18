@@ -1,0 +1,8 @@
+puzzle_id,size,solved,status,steps,primary_variables,auxiliary_variables,clauses,sat_calls,decisions,propagations,backtracks,runtime_ms,unique,uniqueness_ms
+G01,3,True,SOLVED,7,9,0,27,18,0,76,0,0.191,True,0.345
+G02,3,True,SOLVED,7,9,0,28,17,3,92,0,0.227,True,0.301
+G03,3,True,SOLVED,7,9,3,38,20,0,119,0,0.293,True,0.222
+G04,4,True,SOLVED,14,16,8,84,31,9,384,0,1.241,True,1.571
+G05,4,True,SOLVED,14,16,6,77,35,0,357,0,0.887,True,1.111
+G06,4,True,SOLVED,14,16,8,72,37,0,354,0,0.954,True,0.933
+G07,5,True,SOLVED,23,25,7,126,57,88,844,0,4.113,True,2.715
