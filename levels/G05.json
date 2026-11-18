@@ -1,0 +1,296 @@
+{
+  "id": "G05",
+  "name": "Puzzle G05",
+  "group": "4x4",
+  "size": 4,
+  "desc": "4 x 4 Griductive puzzle, no guessing required.",
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Abel",
+      "job": "Nurse"
+    },
+    {
+      "cell": "B1",
+      "name": "Bea",
+      "job": "Officer"
+    },
+    {
+      "cell": "C1",
+      "name": "Clara",
+      "job": "Painter"
+    },
+    {
+      "cell": "D1",
+      "name": "Derek",
+      "job": "Quarryman"
+    },
+    {
+      "cell": "A2",
+      "name": "Eliza",
+      "job": "Ranger"
+    },
+    {
+      "cell": "B2",
+      "name": "Franz",
+      "job": "Sailor"
+    },
+    {
+      "cell": "C2",
+      "name": "Grant",
+      "job": "Tailor"
+    },
+    {
+      "cell": "D2",
+      "name": "Hannah",
+      "job": "Usher"
+    },
+    {
+      "cell": "A3",
+      "name": "Ivy",
+      "job": "Vet"
+    },
+    {
+      "cell": "B3",
+      "name": "Jonas",
+      "job": "Writer"
+    },
+    {
+      "cell": "C3",
+      "name": "Karl",
+      "job": "Xenobiologist"
+    },
+    {
+      "cell": "D3",
+      "name": "Leo",
+      "job": "Yoga trainer"
+    },
+    {
+      "cell": "A4",
+      "name": "Mara",
+      "job": "Zoologist"
+    },
+    {
+      "cell": "B4",
+      "name": "Noah",
+      "job": "Baker"
+    },
+    {
+      "cell": "C4",
+      "name": "Owen",
+      "job": "Chef"
+    },
+    {
+      "cell": "D4",
+      "name": "Priya",
+      "job": "Doctor"
+    }
+  ],
+  "clues": [
+    {
+      "id": "c1",
+      "owner": "Abel",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "intersection",
+        "regions": [
+          {
+            "kind": "row",
+            "row": 3
+          },
+          {
+            "kind": "neighbors",
+            "cell": "A3"
+          }
+        ]
+      },
+      "k": 0
+    },
+    {
+      "id": "c2",
+      "owner": "Bea",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "C1",
+          "A1"
+        ]
+      },
+      "k": 0
+    },
+    {
+      "id": "c3",
+      "owner": "Clara",
+      "type": "PARITY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "D1",
+          "C1"
+        ]
+      },
+      "parity": "even"
+    },
+    {
+      "id": "c4",
+      "owner": "Derek",
+      "type": "DIFFERENT",
+      "a": "Eliza",
+      "b": "Derek"
+    },
+    {
+      "id": "c5",
+      "owner": "Eliza",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "B2",
+          "A1",
+          "C1",
+          "D1"
+        ]
+      },
+      "k": 1
+    },
+    {
+      "id": "c6",
+      "owner": "Franz",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "C2",
+          "A2",
+          "A1",
+          "B2"
+        ]
+      },
+      "k": 3
+    },
+    {
+      "id": "c7",
+      "owner": "Grant",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "D2",
+          "B2",
+          "B1",
+          "C2"
+        ]
+      },
+      "k": 3
+    },
+    {
+      "id": "c8",
+      "owner": "Hannah",
+      "type": "FACT",
+      "person": "Ivy",
+      "status": "CRIMINAL"
+    },
+    {
+      "id": "c9",
+      "owner": "Ivy",
+      "type": "SAME",
+      "a": "Jonas",
+      "b": "Derek"
+    },
+    {
+      "id": "c10",
+      "owner": "Jonas",
+      "type": "SAME",
+      "a": "Karl",
+      "b": "Derek"
+    },
+    {
+      "id": "c11",
+      "owner": "Karl",
+      "type": "FACT",
+      "person": "Leo",
+      "status": "INNOCENT"
+    },
+    {
+      "id": "c12",
+      "owner": "Leo",
+      "type": "PARITY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "A4",
+          "C3"
+        ]
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c13",
+      "owner": "Mara",
+      "type": "PARITY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "B4",
+          "D2",
+          "D1"
+        ]
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c14",
+      "owner": "Noah",
+      "type": "SAME",
+      "a": "Owen",
+      "b": "Grant"
+    },
+    {
+      "id": "c15",
+      "owner": "Owen",
+      "type": "PARITY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "D4",
+          "B4",
+          "A3"
+        ]
+      },
+      "parity": "even"
+    },
+    {
+      "id": "c16",
+      "owner": "Priya",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "col",
+        "col": "A"
+      },
+      "k": 3
+    }
+  ],
+  "solution": {
+    "Abel": "INNOCENT",
+    "Bea": "CRIMINAL",
+    "Clara": "INNOCENT",
+    "Derek": "INNOCENT",
+    "Eliza": "CRIMINAL",
+    "Franz": "CRIMINAL",
+    "Grant": "CRIMINAL",
+    "Hannah": "INNOCENT",
+    "Ivy": "CRIMINAL",
+    "Jonas": "INNOCENT",
+    "Karl": "INNOCENT",
+    "Leo": "INNOCENT",
+    "Mara": "CRIMINAL",
+    "Noah": "CRIMINAL",
+    "Owen": "CRIMINAL",
+    "Priya": "INNOCENT"
+  },
+  "initial_revealed": [
+    "Abel",
+    "Bea"
+  ]
+}

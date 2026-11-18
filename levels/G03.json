@@ -1,0 +1,150 @@
+{
+  "id": "G03",
+  "name": "Puzzle G03",
+  "group": "3x3",
+  "size": 3,
+  "desc": "3 x 3 Griductive puzzle, no guessing required.",
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Abel",
+      "job": "Chef"
+    },
+    {
+      "cell": "B1",
+      "name": "Bea",
+      "job": "Doctor"
+    },
+    {
+      "cell": "C1",
+      "name": "Clara",
+      "job": "Pilot"
+    },
+    {
+      "cell": "A2",
+      "name": "Derek",
+      "job": "Teacher"
+    },
+    {
+      "cell": "B2",
+      "name": "Eliza",
+      "job": "Engineer"
+    },
+    {
+      "cell": "C2",
+      "name": "Franz",
+      "job": "Artist"
+    },
+    {
+      "cell": "A3",
+      "name": "Grant",
+      "job": "Clerk"
+    },
+    {
+      "cell": "B3",
+      "name": "Hannah",
+      "job": "Farmer"
+    },
+    {
+      "cell": "C3",
+      "name": "Ivy",
+      "job": "Guard"
+    }
+  ],
+  "clues": [
+    {
+      "id": "c1",
+      "owner": "Abel",
+      "type": "FACT",
+      "person": "Abel",
+      "status": "INNOCENT"
+    },
+    {
+      "id": "c2",
+      "owner": "Bea",
+      "type": "SAME",
+      "a": "Clara",
+      "b": "Abel"
+    },
+    {
+      "id": "c3",
+      "owner": "Clara",
+      "type": "SAME",
+      "a": "Derek",
+      "b": "Clara"
+    },
+    {
+      "id": "c4",
+      "owner": "Derek",
+      "type": "SAME",
+      "a": "Eliza",
+      "b": "Abel"
+    },
+    {
+      "id": "c5",
+      "owner": "Eliza",
+      "type": "FACT",
+      "person": "Franz",
+      "status": "INNOCENT"
+    },
+    {
+      "id": "c6",
+      "owner": "Franz",
+      "type": "PARITY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "A3",
+          "B1",
+          "C2",
+          "A2"
+        ]
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c7",
+      "owner": "Grant",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "cells",
+        "cells": [
+          "B3",
+          "C2",
+          "A3",
+          "B1"
+        ]
+      },
+      "k": 1
+    },
+    {
+      "id": "c8",
+      "owner": "Hannah",
+      "type": "SAME",
+      "a": "Ivy",
+      "b": "Eliza"
+    },
+    {
+      "id": "c9",
+      "owner": "Ivy",
+      "type": "FACT",
+      "person": "Ivy",
+      "status": "INNOCENT"
+    }
+  ],
+  "solution": {
+    "Abel": "INNOCENT",
+    "Bea": "INNOCENT",
+    "Clara": "INNOCENT",
+    "Derek": "INNOCENT",
+    "Eliza": "INNOCENT",
+    "Franz": "INNOCENT",
+    "Grant": "CRIMINAL",
+    "Hannah": "INNOCENT",
+    "Ivy": "INNOCENT"
+  },
+  "initial_revealed": [
+    "Abel",
+    "Bea"
+  ]
+}
