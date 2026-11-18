@@ -9,13 +9,13 @@
       "primary_variables": 9,
       "auxiliary_variables": 0,
       "clauses": 27,
-      "sat_calls": 18,
+      "sat_calls": 29,
       "decisions": 0,
-      "propagations": 76,
+      "propagations": 110,
       "backtracks": 0,
-      "runtime_ms": 0.191,
+      "runtime_ms": 0.3,
       "unique": true,
-      "uniqueness_ms": 0.345
+      "uniqueness_ms": 0.349
     },
     {
       "puzzle_id": "G02",
@@ -26,13 +26,13 @@
       "primary_variables": 9,
       "auxiliary_variables": 0,
       "clauses": 28,
-      "sat_calls": 17,
-      "decisions": 3,
-      "propagations": 92,
+      "sat_calls": 27,
+      "decisions": 4,
+      "propagations": 137,
       "backtracks": 0,
-      "runtime_ms": 0.227,
+      "runtime_ms": 0.329,
       "unique": true,
-      "uniqueness_ms": 0.301
+      "uniqueness_ms": 0.373
     },
     {
       "puzzle_id": "G03",
@@ -43,13 +43,13 @@
       "primary_variables": 9,
       "auxiliary_variables": 3,
       "clauses": 38,
-      "sat_calls": 20,
+      "sat_calls": 33,
       "decisions": 0,
-      "propagations": 119,
+      "propagations": 187,
       "backtracks": 0,
-      "runtime_ms": 0.293,
+      "runtime_ms": 0.445,
       "unique": true,
-      "uniqueness_ms": 0.222
+      "uniqueness_ms": 0.197
     },
     {
       "puzzle_id": "G04",
@@ -60,13 +60,13 @@
       "primary_variables": 16,
       "auxiliary_variables": 8,
       "clauses": 84,
-      "sat_calls": 31,
-      "decisions": 9,
-      "propagations": 384,
+      "sat_calls": 48,
+      "decisions": 11,
+      "propagations": 552,
       "backtracks": 0,
-      "runtime_ms": 1.241,
+      "runtime_ms": 1.664,
       "unique": true,
-      "uniqueness_ms": 1.571
+      "uniqueness_ms": 1.767
     },
     {
       "puzzle_id": "G05",
@@ -77,13 +77,13 @@
       "primary_variables": 16,
       "auxiliary_variables": 6,
       "clauses": 77,
-      "sat_calls": 35,
+      "sat_calls": 56,
       "decisions": 0,
-      "propagations": 357,
+      "propagations": 549,
       "backtracks": 0,
-      "runtime_ms": 0.887,
+      "runtime_ms": 1.221,
       "unique": true,
-      "uniqueness_ms": 1.111
+      "uniqueness_ms": 1.256
     },
     {
       "puzzle_id": "G06",
@@ -94,13 +94,13 @@
       "primary_variables": 16,
       "auxiliary_variables": 8,
       "clauses": 72,
-      "sat_calls": 37,
+      "sat_calls": 60,
       "decisions": 0,
-      "propagations": 354,
+      "propagations": 540,
       "backtracks": 0,
-      "runtime_ms": 0.954,
+      "runtime_ms": 1.398,
       "unique": true,
-      "uniqueness_ms": 0.933
+      "uniqueness_ms": 0.956
     },
     {
       "puzzle_id": "G07",
@@ -111,13 +111,13 @@
       "primary_variables": 25,
       "auxiliary_variables": 7,
       "clauses": 126,
-      "sat_calls": 57,
-      "decisions": 88,
-      "propagations": 844,
+      "sat_calls": 91,
+      "decisions": 124,
+      "propagations": 1222,
       "backtracks": 0,
-      "runtime_ms": 4.113,
+      "runtime_ms": 6.456,
       "unique": true,
-      "uniqueness_ms": 2.715
+      "uniqueness_ms": 2.661
     }
   ]
 }

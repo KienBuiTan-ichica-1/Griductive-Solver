@@ -357,8 +357,9 @@ export default function App() {
               {state.trace.length === 0 && <p className="desc">Chưa có bước nào.</p>}
               {[...state.trace].reverse().map((t: TraceEntry, i) => (
                 <div key={i} className={`trace-item ${String(t.result ?? '').toLowerCase()}`}>
-                  <b>{t.character ?? t.action}</b> · {t.verdict ?? ''} · {t.result ?? ''}
-                  {t.clue_id ? ` · ${t.clue_id}` : ''}
+                  <b>#{t.step ?? 0} {t.character ?? t.action}</b> · {t.verdict ?? ''} · {t.result ?? ''}
+                  {t.revealed_clue ? ` · clue ${t.revealed_clue}` : ''}
+                  <span className="muted"> · active: {(t.active_clues ?? []).join(',') || '—'} · SAT {t.sat_queries ?? 0}</span>
                 </div>
               ))}
             </div>

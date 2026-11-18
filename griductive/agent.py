@@ -72,9 +72,9 @@ class LogicAgent:
         })
         return sat
 
-    def classify(self, name: str) -> str:
+    def classify(self, name: str, force: bool = False) -> str:
         """CRIMINAL / INNOCENT / UNKNOWN / INCONSISTENT for one character."""
-        if name in self._cache:
+        if not force and name in self._cache:
             return self._cache[name]
         kb = self._knowledge_base()
         if self._consistent is None:

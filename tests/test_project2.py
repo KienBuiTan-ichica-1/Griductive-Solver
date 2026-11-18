@@ -177,6 +177,10 @@ class GameTests(unittest.TestCase):
         result = session.verdict(forced["name"], forced["verdict"])
         self.assertEqual(result["result"], "ACCEPTED")
         self.assertEqual(len(session.state()["clues"]), before + 1)
+        last = session.state()["trace"][-1]
+        for key in ("step", "active_clues", "sat_queries", "queries", "verdict", "revealed_clue"):
+            self.assertIn(key, last)
+        self.assertTrue(last["queries"])
         public = session.state()
         for character in public["characters"]:
             if character["name"] not in session.engine.proved:

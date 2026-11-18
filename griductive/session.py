@@ -40,7 +40,8 @@ class GameSession:
             return {"result": ALREADY_KNOWN, "state": self.state()}
 
         queries_before = len(self.agent.queries)
-        classification = self.agent.classify(name)
+        active_clues = [clue.id for clue in self.agent.revealed_clues]
+        classification = self.agent.classify(name, force=True)
         if classification == INCONSISTENT:
             outcome = {"result": INCONSISTENT, "classification": classification}
         elif classification == "UNKNOWN":
@@ -59,10 +60,14 @@ class GameSession:
 
         entry = {
             "action": "verdict",
+            "step": self.engine.step_count,
             "character": name,
             "verdict": verdict,
             **outcome,
+            "active_clues": active_clues,
             "sat_queries": len(self.agent.queries) - queries_before,
+            "queries": self.agent.queries[queries_before:],
+            "revealed_clue": outcome.get("clue_id"),
         }
         self.trace.append(entry)
         return {**outcome, "state": self.state()}

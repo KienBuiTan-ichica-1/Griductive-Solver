@@ -41,11 +41,16 @@ export interface Analysis {
 
 export interface TraceEntry {
   action: string
+  step?: number
   character?: string
   verdict?: string
   result?: string
+  classification?: string
   clue_id?: string
+  revealed_clue?: string
+  active_clues?: string[]
   sat_queries?: number
+  queries?: { assumption: number[]; sat: boolean; clue_ids: string[] }[]
 }
 
 export interface GameState {

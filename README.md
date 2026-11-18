@@ -114,8 +114,9 @@ python -m unittest discover -s tests -v     # 11 test: model, evaluator, encoder
 python benchmark.py                          # ghi results/benchmark.csv, results/benchmark.json
 ```
 
-Benchmark mẫu (máy phát triển): 3×3 ~0.2 ms, 4×4 ~1 ms, 5×5 ~4 ms cho toàn bộ chuỗi suy luận;
-mọi puzzle đều solved, unique, và hidden solution thỏa mãn mọi clue.
+Benchmark mẫu (máy phát triển): 3×3 ~0.3 ms, 4×4 ~1.5 ms, 5×5 ~6 ms cho toàn bộ chuỗi suy luận;
+mọi puzzle đều solved, unique, và hidden solution thỏa mãn mọi clue. Mỗi bản ghi trace gồm số bước,
+clue đang active, SAT query và clue vừa lật.
 
 ## Định dạng puzzle (JSON)
 
