@@ -1,6 +1,7 @@
 """FastAPI backend for the Griductive solver. Chay: python main.py (hoac uvicorn main:app --reload)."""
 import json
 import threading
+import sys
 from pathlib import Path
 from typing import List, Optional
 
@@ -176,4 +177,7 @@ if DIST.exists():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    defaultPort = 8000
+    setPort = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else defaultPort
+
+    uvicorn.run(app, host="127.0.0.1", port=setPort)
