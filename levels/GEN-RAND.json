@@ -1,0 +1,334 @@
+{
+  "id": "GEN-4x4-hard-144795",
+  "name": "Generated 4x4 hard #144795",
+  "group": "4x4",
+  "size": 4,
+  "desc": "4 x 4 generated Griductive puzzle (hard), seed 144795.",
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Uma",
+      "job": "Gardener"
+    },
+    {
+      "cell": "B1",
+      "name": "Clara",
+      "job": "Ranger"
+    },
+    {
+      "cell": "C1",
+      "name": "Tom",
+      "job": "Fisher"
+    },
+    {
+      "cell": "D1",
+      "name": "Roy",
+      "job": "Dancer"
+    },
+    {
+      "cell": "A2",
+      "name": "Hugo",
+      "job": "Tutor"
+    },
+    {
+      "cell": "B2",
+      "name": "Wendy",
+      "job": "Inventor"
+    },
+    {
+      "cell": "C2",
+      "name": "Victor",
+      "job": "Hunter"
+    },
+    {
+      "cell": "D2",
+      "name": "Nico",
+      "job": "Mason"
+    },
+    {
+      "cell": "A3",
+      "name": "Ivy",
+      "job": "Xenobiologist"
+    },
+    {
+      "cell": "B3",
+      "name": "Jasper",
+      "job": "Welder"
+    },
+    {
+      "cell": "C3",
+      "name": "Eliza",
+      "job": "Tailor"
+    },
+    {
+      "cell": "D3",
+      "name": "Xavier",
+      "job": "Judge"
+    },
+    {
+      "cell": "A4",
+      "name": "Sophia",
+      "job": "Engineer"
+    },
+    {
+      "cell": "B4",
+      "name": "Bea",
+      "job": "Quarryman"
+    },
+    {
+      "cell": "C4",
+      "name": "Priya",
+      "job": "Baker"
+    },
+    {
+      "cell": "D4",
+      "name": "Derek",
+      "job": "Sailor"
+    }
+  ],
+  "clues": [
+    {
+      "id": "c1",
+      "owner": "Uma",
+      "type": "PARITY",
+      "region": {
+        "kind": "neighbors",
+        "cell": "A1"
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c2",
+      "owner": "Clara",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "neighbors",
+        "cell": "C1"
+      },
+      "k": 3
+    },
+    {
+      "id": "c3",
+      "owner": "Tom",
+      "type": "COMPARE",
+      "left": {
+        "kind": "neighbors",
+        "cell": "A2"
+      },
+      "right": {
+        "kind": "col",
+        "col": "B"
+      },
+      "op": "="
+    },
+    {
+      "id": "c4",
+      "owner": "Roy",
+      "type": "PARITY",
+      "region": {
+        "kind": "col",
+        "col": "B"
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c5",
+      "owner": "Hugo",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "intersection",
+        "regions": [
+          {
+            "kind": "neighbors",
+            "cell": "D1"
+          },
+          {
+            "kind": "neighbors",
+            "cell": "B3"
+          }
+        ]
+      },
+      "k": 1
+    },
+    {
+      "id": "c6",
+      "owner": "Wendy",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "between",
+        "a": "A4",
+        "b": "C4"
+      },
+      "k": 1
+    },
+    {
+      "id": "c7",
+      "owner": "Victor",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 2
+      },
+      "k": 1
+    },
+    {
+      "id": "c8",
+      "owner": "Nico",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "neighbors",
+        "cell": "D1"
+      },
+      "k": 1
+    },
+    {
+      "id": "c9",
+      "owner": "Ivy",
+      "type": "PARITY",
+      "region": {
+        "kind": "common_neighbors",
+        "a": "B1",
+        "b": "A1"
+      },
+      "parity": "even"
+    },
+    {
+      "id": "c10",
+      "owner": "Jasper",
+      "type": "PARITY",
+      "region": {
+        "kind": "col",
+        "col": "A"
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c11",
+      "owner": "Eliza",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "corners"
+      },
+      "k": 2
+    },
+    {
+      "id": "c12",
+      "owner": "Xavier",
+      "type": "AT_MOST",
+      "region": {
+        "kind": "row",
+        "row": 3
+      },
+      "k": 3
+    },
+    {
+      "id": "c13",
+      "owner": "Sophia",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "between",
+        "a": "D3",
+        "b": "B3"
+      },
+      "k": 0
+    },
+    {
+      "id": "c14",
+      "owner": "Bea",
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "common_neighbors",
+        "a": "A2",
+        "b": "B3"
+      },
+      "k": 1
+    },
+    {
+      "id": "c15",
+      "owner": "Priya",
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "neighbors",
+        "cell": "C2"
+      },
+      "k": 4
+    },
+    {
+      "id": "c16",
+      "owner": "Derek",
+      "type": "PARITY",
+      "region": {
+        "kind": "col",
+        "col": "C"
+      },
+      "parity": "odd"
+    }
+  ],
+  "solution": {
+    "Uma": "INNOCENT",
+    "Clara": "CRIMINAL",
+    "Tom": "INNOCENT",
+    "Roy": "CRIMINAL",
+    "Hugo": "INNOCENT",
+    "Wendy": "INNOCENT",
+    "Victor": "CRIMINAL",
+    "Nico": "INNOCENT",
+    "Ivy": "CRIMINAL",
+    "Jasper": "CRIMINAL",
+    "Eliza": "INNOCENT",
+    "Xavier": "CRIMINAL",
+    "Sophia": "INNOCENT",
+    "Bea": "CRIMINAL",
+    "Priya": "INNOCENT",
+    "Derek": "CRIMINAL"
+  },
+  "initial_revealed": [
+    "Wendy"
+  ],
+  "meta": {
+    "seed": "144795",
+    "difficulty": "hard",
+    "attempts": 1,
+    "score": 5.62,
+    "avg_frontier": 1.0,
+    "clue_types": {
+      "AT_LEAST": 2,
+      "AT_MOST": 1,
+      "COMPARE": 1,
+      "EXACTLY": 7,
+      "PARITY": 5
+    },
+    "solve": {
+      "steps": 15,
+      "sat_calls": 135,
+      "decisions": 14,
+      "propagations": 1574,
+      "backtracks": 12
+    },
+    "tier": {
+      "types": {
+        "FACT": 0,
+        "SAME": 0,
+        "DIFFERENT": 0,
+        "EXACTLY": 2,
+        "AT_LEAST": 3,
+        "AT_MOST": 3,
+        "PARITY": 3,
+        "COMPARE": 3
+      },
+      "regions": {
+        "row": 2,
+        "col": 2,
+        "neighbors": 5,
+        "cells": 0,
+        "boundary": 2,
+        "corners": 2,
+        "between": 2,
+        "common_neighbors": 4,
+        "intersection": 2
+      },
+      "frontier_cap": 1,
+      "initial_share": 0.0
+    }
+  }
+}

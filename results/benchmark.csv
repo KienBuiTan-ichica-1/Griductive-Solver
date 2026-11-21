@@ -1,8 +1,10 @@
 puzzle_id,size,solved,status,steps,primary_variables,auxiliary_variables,clauses,sat_calls,decisions,propagations,backtracks,runtime_ms,unique,uniqueness_ms
-G01,3,True,SOLVED,7,9,0,27,29,0,110,0,0.3,True,0.349
-G02,3,True,SOLVED,7,9,0,28,27,4,137,0,0.329,True,0.373
-G03,3,True,SOLVED,7,9,3,38,33,0,187,0,0.445,True,0.197
-G04,4,True,SOLVED,14,16,8,84,48,11,552,0,1.664,True,1.767
-G05,4,True,SOLVED,14,16,6,77,56,0,549,0,1.221,True,1.256
-G06,4,True,SOLVED,14,16,8,72,60,0,540,0,1.398,True,0.956
-G07,5,True,SOLVED,23,25,7,126,91,124,1222,0,6.456,True,2.661
+G01,3,True,SOLVED,7,9,0,27,29,0,110,0,0.117,True,0.159
+G02,3,True,SOLVED,7,9,0,28,27,4,137,0,0.146,True,0.138
+G03,3,True,SOLVED,7,9,3,38,33,0,187,0,0.198,True,0.095
+G04,4,True,SOLVED,14,16,8,84,48,11,552,0,0.794,True,0.7
+G05,4,True,SOLVED,14,16,6,77,56,0,549,0,0.539,True,0.491
+G06,4,True,SOLVED,14,16,8,72,60,0,540,0,0.598,True,0.4
+G07,5,True,SOLVED,23,25,7,126,91,124,1222,0,2.543,True,1.122
+GEN-4x4-hard-42,4,True,SOLVED,15,16,19,181,149,138,2048,12,8.737,True,2.824
+GEN-4x4-hard-144795,4,True,SOLVED,15,16,23,306,135,14,1574,12,4.706,True,2.811

@@ -1,0 +1,308 @@
+{
+  "id": "GEN-4x4-hard-42",
+  "name": "Generated 4x4 hard #42",
+  "group": "4x4",
+  "size": 4,
+  "desc": "4 x 4 generated Griductive puzzle (hard), seed 42.",
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Jasper",
+      "job": "Welder"
+    },
+    {
+      "cell": "B1",
+      "name": "Hannah",
+      "job": "Writer"
+    },
+    {
+      "cell": "C1",
+      "name": "Priya",
+      "job": "Baker"
+    },
+    {
+      "cell": "D1",
+      "name": "Owen",
+      "job": "Guard"
+    },
+    {
+      "cell": "A2",
+      "name": "Cleo",
+      "job": "Officer"
+    },
+    {
+      "cell": "B2",
+      "name": "Zane",
+      "job": "Lawyer"
+    },
+    {
+      "cell": "C2",
+      "name": "Abel",
+      "job": "Painter"
+    },
+    {
+      "cell": "D2",
+      "name": "Dante",
+      "job": "Pilot"
+    },
+    {
+      "cell": "A3",
+      "name": "Yara",
+      "job": "Knight"
+    },
+    {
+      "cell": "B3",
+      "name": "Iris",
+      "job": "Weaver"
+    },
+    {
+      "cell": "C3",
+      "name": "Noah",
+      "job": "Farmer"
+    },
+    {
+      "cell": "D3",
+      "name": "Wendy",
+      "job": "Inventor"
+    },
+    {
+      "cell": "A4",
+      "name": "Nico",
+      "job": "Mason"
+    },
+    {
+      "cell": "B4",
+      "name": "Uma",
+      "job": "Gardener"
+    },
+    {
+      "cell": "C4",
+      "name": "Xavier",
+      "job": "Judge"
+    },
+    {
+      "cell": "D4",
+      "name": "Derek",
+      "job": "Sailor"
+    }
+  ],
+  "clues": [
+    {
+      "id": "c1",
+      "owner": "Jasper",
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "intersection",
+        "regions": [
+          {
+            "kind": "row",
+            "row": 2
+          },
+          {
+            "kind": "neighbors",
+            "cell": "C1"
+          }
+        ]
+      },
+      "k": 2
+    },
+    {
+      "id": "c2",
+      "owner": "Hannah",
+      "type": "SAME",
+      "a": "Hannah",
+      "b": "Noah"
+    },
+    {
+      "id": "c3",
+      "owner": "Priya",
+      "type": "FACT",
+      "person": "Uma",
+      "status": "CRIMINAL"
+    },
+    {
+      "id": "c4",
+      "owner": "Owen",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "corners"
+      },
+      "k": 2
+    },
+    {
+      "id": "c5",
+      "owner": "Cleo",
+      "type": "SAME",
+      "a": "Yara",
+      "b": "Cleo"
+    },
+    {
+      "id": "c6",
+      "owner": "Zane",
+      "type": "PARITY",
+      "region": {
+        "kind": "col",
+        "col": "A"
+      },
+      "parity": "even"
+    },
+    {
+      "id": "c7",
+      "owner": "Abel",
+      "type": "AT_MOST",
+      "region": {
+        "kind": "intersection",
+        "regions": [
+          {
+            "kind": "neighbors",
+            "cell": "B1"
+          },
+          {
+            "kind": "col",
+            "col": "C"
+          }
+        ]
+      },
+      "k": 1
+    },
+    {
+      "id": "c8",
+      "owner": "Dante",
+      "type": "FACT",
+      "person": "Iris",
+      "status": "INNOCENT"
+    },
+    {
+      "id": "c9",
+      "owner": "Yara",
+      "type": "FACT",
+      "person": "Dante",
+      "status": "CRIMINAL"
+    },
+    {
+      "id": "c10",
+      "owner": "Iris",
+      "type": "COMPARE",
+      "left": {
+        "kind": "common_neighbors",
+        "a": "B4",
+        "b": "D3"
+      },
+      "right": {
+        "kind": "neighbors",
+        "cell": "B4"
+      },
+      "op": "<"
+    },
+    {
+      "id": "c11",
+      "owner": "Noah",
+      "type": "PARITY",
+      "region": {
+        "kind": "row",
+        "row": 1
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c12",
+      "owner": "Wendy",
+      "type": "PARITY",
+      "region": {
+        "kind": "row",
+        "row": 4
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c13",
+      "owner": "Nico",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "intersection",
+        "regions": [
+          {
+            "kind": "row",
+            "row": 2
+          },
+          {
+            "kind": "neighbors",
+            "cell": "A1"
+          }
+        ]
+      },
+      "k": 0
+    },
+    {
+      "id": "c14",
+      "owner": "Uma",
+      "type": "PARITY",
+      "region": {
+        "kind": "neighbors",
+        "cell": "A2"
+      },
+      "parity": "odd"
+    },
+    {
+      "id": "c15",
+      "owner": "Xavier",
+      "type": "FACT",
+      "person": "Wendy",
+      "status": "INNOCENT"
+    },
+    {
+      "id": "c16",
+      "owner": "Derek",
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 4
+      },
+      "k": 3
+    }
+  ],
+  "solution": {
+    "Jasper": "CRIMINAL",
+    "Hannah": "INNOCENT",
+    "Priya": "INNOCENT",
+    "Owen": "INNOCENT",
+    "Cleo": "INNOCENT",
+    "Zane": "INNOCENT",
+    "Abel": "CRIMINAL",
+    "Dante": "CRIMINAL",
+    "Yara": "INNOCENT",
+    "Iris": "INNOCENT",
+    "Noah": "INNOCENT",
+    "Wendy": "INNOCENT",
+    "Nico": "CRIMINAL",
+    "Uma": "CRIMINAL",
+    "Xavier": "CRIMINAL",
+    "Derek": "INNOCENT"
+  },
+  "initial_revealed": [
+    "Cleo"
+  ],
+  "meta": {
+    "seed": "42",
+    "difficulty": "hard",
+    "attempts": 1,
+    "score": 13.45,
+    "avg_frontier": 1.0,
+    "clue_types": {
+      "AT_LEAST": 1,
+      "AT_MOST": 1,
+      "COMPARE": 1,
+      "EXACTLY": 3,
+      "FACT": 4,
+      "PARITY": 4,
+      "SAME": 2
+    },
+    "solve": {
+      "steps": 15,
+      "sat_calls": 149,
+      "decisions": 138,
+      "propagations": 2048,
+      "backtracks": 12
+    }
+  }
+}

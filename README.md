@@ -6,12 +6,43 @@ GUI dùng chung phong cách dark/neon với Project 1 (HUD ở trên, bảng đi
 
 ## Cách chạy
 
-**Cách 1: chỉ cần Python** (frontend đã build sẵn trong `frontend/dist`)
+### Trước khi chạy.
+
+- Tạo môi trường ảo cho build. 
+
+```bash
+python -m venv venv
+```
+
+- Kích hoạt
+
+Linux/MacOS
+```bash
+source venv/bin/activate
+```
+
+Window
+```bash
+venv\Scripts\activate.bat     --hoặc Activate.ps1 --
+```
+
+Sau khi kích hoạt thì phải có "(venv)" xuất hiện.
+
+- Tải các dependency về :
 
 ```bash
 pip install -r requirements.txt
-python main.py            # mở http://127.0.0.1:8000
 ```
+
+### Chạy 
+
+**Cách 1: Trực tiếp Python** (frontend đã build sẵn trong `frontend/dist`)
+
+```bash
+python main.py <port>            # mở http://127.0.0.1:<port>
+```
+
+Port sẽ được default là 8000.
 
 **Cách 2: chế độ phát triển** (cần Node 18+)
 
@@ -51,10 +82,11 @@ Source/
     engine.py              GameEngine: chủ sở hữu đáp án ẩn và clue chưa lật
     agent.py               LogicAgent: entailment, hint, kiểm tra unique
     session.py             giao thức no-guess giữa engine và agent
-  levels/*.json            7 puzzle mẫu (3 3×3, 3 4×4, 1 5×5)
-  benchmark.py             thực nghiệm -> results/benchmark.csv|json
-  tests/                   python -m unittest discover -s tests
-  tools/generate_puzzles.py  sinh puzzle có chuỗi suy luận chứng minh được
+  levels/*.json            Các level sẵn.
+  benchmark.py             Chạy benchmark
+  tests/                   Chạy các test
+  tools/generate_puzzles.py  --depreciated-- sinh puzzle có chuỗi suy luận chứng minh được
+  random_levels/           Tạo ra puzzle có thể điều chỉnh được. (Đọc **README**)
   frontend/                React + TypeScript (src/App.tsx, src/styles.css)
   results/                 benchmark.csv, benchmark.json
 ```
@@ -109,10 +141,30 @@ Mỗi lần xây KB đều đếm số biến chính, biến phụ và clause; A
 
 ## Kiểm tra
 
+### Kiểm tra logic 
+
+Cần các dependency sau đây:
+
 ```bash
-python -m unittest discover -s tests -v     # 11 test: model, evaluator, encoder, DPLL, protocol, 7 puzzle
-python benchmark.py                          # ghi results/benchmark.csv, results/benchmark.json
+pip install pytest
+pip install hpttx2
 ```
+
+Chạy các test qua : 
+
+```bash
+pytest tests/*
+```
+
+### Benchmark
+
+Chạy benchmark qua tất cả các level trong thư mục `levels`.
+
+```bash
+python benchmark.py
+```
+
+Tạo `benchmark.csv` và `benchmark.json` file trên `results/`
 
 Benchmark mẫu (máy phát triển): 3×3 ~0.3 ms, 4×4 ~1.5 ms, 5×5 ~6 ms cho toàn bộ chuỗi suy luận;
 mọi puzzle đều solved, unique, và hidden solution thỏa mãn mọi clue. Mỗi bản ghi trace gồm số bước,
@@ -136,3 +188,7 @@ clue đang active, SAT query và clue vừa lật.
 
 `owner` là nhân vật sở hữu thẻ clue; `initial_revealed` là danh sách tên các thẻ lật sẵn (status + clue đều public).
 Mọi tham số và vùng đều được validate trước khi encode; clue type hoặc cell không hợp lệ bị từ chối.
+
+### random_levels.
+
+[Đọc ở đây (Tiếng Anh)](./random_levels/README.md)

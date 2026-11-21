@@ -13,9 +13,9 @@
       "decisions": 0,
       "propagations": 110,
       "backtracks": 0,
-      "runtime_ms": 0.3,
+      "runtime_ms": 0.117,
       "unique": true,
-      "uniqueness_ms": 0.349
+      "uniqueness_ms": 0.159
     },
     {
       "puzzle_id": "G02",
@@ -30,9 +30,9 @@
       "decisions": 4,
       "propagations": 137,
       "backtracks": 0,
-      "runtime_ms": 0.329,
+      "runtime_ms": 0.146,
       "unique": true,
-      "uniqueness_ms": 0.373
+      "uniqueness_ms": 0.138
     },
     {
       "puzzle_id": "G03",
@@ -47,9 +47,9 @@
       "decisions": 0,
       "propagations": 187,
       "backtracks": 0,
-      "runtime_ms": 0.445,
+      "runtime_ms": 0.198,
       "unique": true,
-      "uniqueness_ms": 0.197
+      "uniqueness_ms": 0.095
     },
     {
       "puzzle_id": "G04",
@@ -64,9 +64,9 @@
       "decisions": 11,
       "propagations": 552,
       "backtracks": 0,
-      "runtime_ms": 1.664,
+      "runtime_ms": 0.794,
       "unique": true,
-      "uniqueness_ms": 1.767
+      "uniqueness_ms": 0.7
     },
     {
       "puzzle_id": "G05",
@@ -81,9 +81,9 @@
       "decisions": 0,
       "propagations": 549,
       "backtracks": 0,
-      "runtime_ms": 1.221,
+      "runtime_ms": 0.539,
       "unique": true,
-      "uniqueness_ms": 1.256
+      "uniqueness_ms": 0.491
     },
     {
       "puzzle_id": "G06",
@@ -98,9 +98,9 @@
       "decisions": 0,
       "propagations": 540,
       "backtracks": 0,
-      "runtime_ms": 1.398,
+      "runtime_ms": 0.598,
       "unique": true,
-      "uniqueness_ms": 0.956
+      "uniqueness_ms": 0.4
     },
     {
       "puzzle_id": "G07",
@@ -115,9 +115,43 @@
       "decisions": 124,
       "propagations": 1222,
       "backtracks": 0,
-      "runtime_ms": 6.456,
+      "runtime_ms": 2.543,
       "unique": true,
-      "uniqueness_ms": 2.661
+      "uniqueness_ms": 1.122
+    },
+    {
+      "puzzle_id": "GEN-4x4-hard-42",
+      "size": 4,
+      "solved": true,
+      "status": "SOLVED",
+      "steps": 15,
+      "primary_variables": 16,
+      "auxiliary_variables": 19,
+      "clauses": 181,
+      "sat_calls": 149,
+      "decisions": 138,
+      "propagations": 2048,
+      "backtracks": 12,
+      "runtime_ms": 8.737,
+      "unique": true,
+      "uniqueness_ms": 2.824
+    },
+    {
+      "puzzle_id": "GEN-4x4-hard-144795",
+      "size": 4,
+      "solved": true,
+      "status": "SOLVED",
+      "steps": 15,
+      "primary_variables": 16,
+      "auxiliary_variables": 23,
+      "clauses": 306,
+      "sat_calls": 135,
+      "decisions": 14,
+      "propagations": 1574,
+      "backtracks": 12,
+      "runtime_ms": 4.706,
+      "unique": true,
+      "uniqueness_ms": 2.811
     }
   ]
 }

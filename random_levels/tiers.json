@@ -1,0 +1,88 @@
+{
+  "_help": "Weights are relative (not percentages); 0 disables an entry. frontier_cap = max characters forced at once after each reveal (null = no limit). initial_share = share of cards face-up at the start. Keys starting with _ are ignored.",
+  "density": [0.35, 0.55],
+  "tries_per_clue": 300,
+  "relax_after": 100,
+  "type_score": {
+    "FACT": 1.0, 
+    "SAME": 1.5, 
+    "DIFFERENT": 1.5, 
+    "EXACTLY": 2.0,
+    "AT_LEAST": 2.5, 
+    "AT_MOST": 2.5, 
+    "PARITY": 3.5, 
+    "COMPARE": 4.0
+  },
+  "tiers": {
+    "easy": {
+        "types": { 
+            "FACT": 1,
+            "SAME": 1,
+            "DIFFERENT": 1, 
+            "EXACTLY": 1, 
+            "AT_LEAST": 2, 
+            "AT_MOST": 2 
+        },
+        "regions": { 
+            "row": 2, 
+            "col": 2, 
+            "neighbors": 2, 
+            "cells": 1 
+        },
+      "frontier_cap": null,
+      "initial_share": 0.34
+    },
+
+    "medium": {
+        "types": {
+            "FACT": 1,
+            "SAME": 1, 
+            "DIFFERENT": 1, 
+            "EXACTLY": 1, 
+            "AT_LEAST": 4, 
+            "AT_MOST": 4,
+            "PARITY": 3, 
+            "COMPARE": 3
+        },
+        "regions": { 
+            "row": 2, 
+            "col": 2, 
+            "neighbors": 4, 
+            "cells": 1,
+            "boundary": 2, 
+            "corners": 3,
+            "between": 3, 
+            "common_neighbors": 4, 
+            "intersection": 3
+        },
+        "frontier_cap": 2,
+        "initial_share": 0.2
+    },
+
+    "hard": {
+        "types": {
+            "FACT": 0, 
+            "SAME": 0, 
+            "DIFFERENT": 0, 
+            "EXACTLY": 2, 
+            "AT_LEAST": 3, 
+            "AT_MOST": 3,
+            "PARITY": 3, 
+            "COMPARE": 3
+        },
+        "regions": {
+            "row": 2, 
+            "col": 2, 
+            "neighbors": 5, 
+            "cells": 0, 
+            "boundary": 2, 
+            "corners": 2,
+            "between": 2, 
+            "common_neighbors": 4, 
+            "intersection": 2
+        },
+        "frontier_cap": 1,
+        "initial_share": 0.0
+    }
+  }
+}
