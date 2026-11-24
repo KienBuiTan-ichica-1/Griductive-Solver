@@ -110,11 +110,10 @@ class LogicAgent:
         for clue in self.revealed_clues:
             remaining = [c for c in self.revealed_clues if c.id != clue.id]
             kb = build_knowledge_base(self.view, remaining, self.proved)
-            solver = DPLLSolver(kb)
-            var = kb.name_to_var[name]
-            wanted = 1 if verdict == "CRIMINAL" else -1
-            sat, _ = solver.solve([-wanted])
-            if not sat:
+            variable = kb.name_to_var[name]
+            opposite = -variable if verdict == "CRIMINAL" else variable
+            sat, _ = DPLLSolver(kb).solve([opposite])
+            if sat:   # without this clue the verdict is no longer forced, so the clue is needed
                 return clue.id
         return self.revealed_clues[0].id if self.revealed_clues else None
 

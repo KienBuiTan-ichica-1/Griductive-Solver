@@ -103,8 +103,11 @@ def api_restart():
 
 @app.post("/api/game/verdict")
 def api_verdict(req: VerdictRequest):
+    verdict = req.verdict.upper()
+    if verdict not in ("CRIMINAL", "INNOCENT"):
+        raise HTTPException(422, "verdict must be CRIMINAL or INNOCENT")
     with LOCK:
-        return _session().verdict(req.name, req.verdict.upper())
+        return _session().verdict(req.name, verdict)
 
 
 @app.get("/api/game/hint")
