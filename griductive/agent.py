@@ -152,8 +152,9 @@ class LogicAgent:
         return needed[0].id if needed else None
 
     def summary(self) -> dict:
+        kb_stats = self._knowledge_base().stats()
         return {
-            "kb": self.last_kb_stats,
+            "kb": kb_stats,
             "sat_calls": self.entail_sat_calls,
             "hint_sat_calls": self.hint_sat_calls,
             "total_sat_calls": self.sat_calls,
