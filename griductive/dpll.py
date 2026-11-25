@@ -45,7 +45,7 @@ class DPLLSolver:
         self._variables = sorted({abs(lit) for clause in self.clauses for lit in clause})
 
     def solve(self, assumptions: Iterable[int] = ()) -> tuple[bool, dict[int, bool] | None]:
-        """Return (SAT, complete model). Assumptions are unit literals (e.g. -3)."""
+        """Return (SAT, model) or raise SolverTimeout; assumptions are unit literals."""
         self.stats = SolverStats()
         self.trace = []
         self.timed_out = False
@@ -70,7 +70,9 @@ class DPLLSolver:
                 self.timed_out = True
                 model = None
         self.stats.time_ms = (time.perf_counter() - started) * 1000.0
-        return (model is not None and not self.timed_out), model
+        if self.timed_out:
+            raise SolverTimeout(f"solver exceeded {self.timeout_ms} ms")
+        return model is not None, model
 
     def _check_timeout(self) -> None:
         if self._deadline is not None and time.perf_counter() >= self._deadline:

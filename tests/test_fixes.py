@@ -6,6 +6,7 @@ from griductive import (
     DPLLSolver,
     GameEngine,
     GameSession,
+    SolverTimeout,
     build_knowledge_base,
     check_uniqueness,
 )
@@ -125,9 +126,23 @@ def test_trace_records_every_agent_sat_query():
     session = GameSession(main.LEVELS["G01"])
     session.auto_solve()
     recorded = [query for entry in session.trace for query in entry.get("queries", [])]
-    assert any(entry["action"] == "hint" for entry in session.trace)
+    assert all(entry["action"] == "verdict" for entry in session.trace)
     assert recorded == session.agent.queries
     assert len(recorded) == session.agent.sat_calls
+    assert session.agent.hint_sat_calls == 0
+    assert all(entry["sat_queries"] >= 1 for entry in session.trace)
+
+
+def test_auto_step_does_not_pay_for_relevant_clue():
+    session = GameSession(main.LEVELS["G01"])
+    session.auto_solve()
+    assert session.agent.hint_sat_calls == 0
+    assert session.agent.entail_sat_calls == session.agent.sat_calls
+
+    explained = GameSession(main.LEVELS["G01"])
+    assert explained.hint()["available"] is True
+    assert explained.agent.hint_sat_calls > 0
+
 
 
 def test_relevant_clue_queries_are_counted_and_traced():
@@ -136,15 +151,38 @@ def test_relevant_clue_queries_are_counted_and_traced():
     hint = session.hint()
     assert hint["available"] is True
     assert session.agent.sat_calls > before
+    assert session.agent.hint_sat_calls > 0
     assert len(hint["state"]["trace"][-1]["queries"]) == session.agent.sat_calls - before
+    assert any(query["purpose"] == "hint" for query in hint["state"]["trace"][-1]["queries"])
+    assert session.agent.summary()["sat_calls"] == session.agent.entail_sat_calls
+    assert session.agent.summary()["hint_sat_calls"] == session.agent.hint_sat_calls
+
+
+def test_hint_returns_a_clue_from_a_minimal_forcing_set():
+    data = puzzle_dict(
+        [
+            {"id": "c1", "owner": "N07", "type": "FACT", "person": "N09", "status": "CRIMINAL"},
+            {"id": "c2", "owner": "N08", "type": "FACT", "person": "N01", "status": "INNOCENT"},
+            {"id": "c3", "owner": "N09", "type": "FACT", "person": "N01", "status": "INNOCENT"},
+        ],
+        solution=solution_with("N09"),
+        initial=["N07", "N08", "N09"],
+        pid="T-minimal-clue",
+    )
+    session = GameSession(Puzzle.from_dict(data))
+    hint = session.hint()
+    assert hint["available"] is True
+    assert hint["name"] == "N01" and hint["verdict"] == "INNOCENT"
+    assert hint["clue_id"] in {"c2", "c3"}
+
 
 
 def test_dpll_timeout_and_uniqueness_timeout_are_reported():
     puzzle = main.LEVELS["G01"]
     kb = build_knowledge_base(puzzle.public_view(), puzzle.clues)
     solver = DPLLSolver(kb, timeout_ms=0)
-    sat, _ = solver.solve()
-    assert sat is False
+    with pytest.raises(SolverTimeout):
+        solver.solve()
     assert solver.timed_out is True
 
     result = check_uniqueness(puzzle, timeout_ms=0)
@@ -158,3 +196,9 @@ def test_benchmark_rows_include_timeout_and_failure_fields(client):
     assert row["timeout_ms"] == main.BENCHMARK_TIMEOUT_MS
     assert row["timed_out"] is False
     assert row["failure"] is None
+    assert row["hint_sat_calls"] == 0
+    assert row["total_sat_calls"] == row["sat_calls"]
+
+
+def test_health_lists_no_clue_type():
+    assert "NO_CLUE" in TestClient(main.app).get("/api/health").json()["clue_types"]

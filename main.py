@@ -18,6 +18,7 @@ from griductive import (
     build_knowledge_base,
     check_uniqueness,
 )
+from griductive.model import NO_CLUE
 
 ROOT = Path(__file__).parent
 LEVELS: dict[str, Puzzle] = {}
@@ -95,6 +96,7 @@ def _validate_hidden_solution(puzzle: Puzzle) -> None:
 def health():
     return {"ok": True, "puzzles": list(LEVELS), "clue_types": [
         "FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST", "PARITY", "COMPARE",
+        NO_CLUE,
     ]}
 
 
@@ -214,6 +216,8 @@ def api_benchmark(req: BenchmarkRequest):
                 "auxiliary_variables": analysis["kb"]["auxiliary_variables"],
                 "clauses": analysis["kb"]["clauses"],
                 "sat_calls": analysis["sat_calls"],
+                "hint_sat_calls": analysis["hint_sat_calls"],
+                "total_sat_calls": analysis["total_sat_calls"],
                 "decisions": analysis["decisions"],
                 "propagations": analysis["propagations"],
                 "backtracks": analysis["backtracks"],

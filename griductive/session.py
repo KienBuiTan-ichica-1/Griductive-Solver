@@ -37,14 +37,41 @@ class GameSession:
     def _query_slice(self, start: int) -> tuple[int, list[dict[str, Any]]]:
         return len(self.agent.queries) - start, self.agent.queries[start:]
 
-    def verdict(self, name: str, verdict: str) -> dict[str, Any]:
+    def _record_hint_trace(
+        self,
+        queries_before: int,
+        outcome: dict[str, Any],
+        timed_out: bool,
+    ) -> None:
+        sat_queries, queries = self._query_slice(queries_before)
+        self.trace.append({
+            "action": "hint",
+            "step": self.engine.step_count,
+            "active_clues": [clue.id for clue in self.agent.revealed_clues],
+            "sat_queries": sat_queries,
+            "queries": queries,
+            "status": outcome.get("status"),
+            "available": outcome.get("available"),
+            "character": outcome.get("name"),
+            "verdict": outcome.get("verdict"),
+            "clue_id": outcome.get("clue_id"),
+            "timeout": timed_out,
+        })
+
+    def verdict(
+        self,
+        name: str,
+        verdict: str,
+        queries_before: int | None = None,
+    ) -> dict[str, Any]:
         if name not in self.engine.puzzle.name_to_cell:
             return {"result": "INVALID", "reason": f"unknown character {name!r}", "state": self.state()}
         wanted = status_to_bool(verdict)
         if name in self.engine.proved:
             return {"result": ALREADY_KNOWN, "state": self.state()}
 
-        queries_before = len(self.agent.queries)
+        if queries_before is None:
+            queries_before = len(self.agent.queries)
         active_clues = [clue.id for clue in self.agent.revealed_clues]
         timed_out = False
         try:
@@ -86,9 +113,12 @@ class GameSession:
         self.trace.append(entry)
         return {**outcome, "state": self.state()}
 
-    def hint(self) -> dict[str, Any]:
+    def hint(
+        self,
+        include_clue: bool = True,
+        record_trace: bool = True,
+    ) -> dict[str, Any]:
         queries_before = len(self.agent.queries)
-        active_clues = [clue.id for clue in self.agent.revealed_clues]
         timed_out = False
         try:
             name = self.agent.forced_next()
@@ -100,7 +130,7 @@ class GameSession:
                 outcome: dict[str, Any] = {"available": False, "status": status}
             else:
                 verdict = self.agent.classify(name)
-                clue_id = self.agent.relevant_clue(name, verdict)
+                clue_id = self.agent.relevant_clue(name, verdict) if include_clue else None
                 outcome = {
                     "available": True,
                     "name": name,
@@ -112,27 +142,20 @@ class GameSession:
             outcome = {"available": False, "status": "TIMEOUT"}
             timed_out = True
 
-        sat_queries, queries = self._query_slice(queries_before)
-        self.trace.append({
-            "action": "hint",
-            "step": self.engine.step_count,
-            "active_clues": active_clues,
-            "sat_queries": sat_queries,
-            "queries": queries,
-            "status": outcome.get("status"),
-            "available": outcome.get("available"),
-            "character": outcome.get("name"),
-            "verdict": outcome.get("verdict"),
-            "clue_id": outcome.get("clue_id"),
-            "timeout": timed_out,
-        })
+        if record_trace:
+            self._record_hint_trace(queries_before, outcome, timed_out)
         return {**outcome, "state": self.state()}
 
     def auto_step(self) -> dict[str, Any]:
-        hint = self.hint()
+        queries_before = len(self.agent.queries)
+        hint = self.hint(include_clue=False, record_trace=False)
         if not hint["available"]:
+            timed_out = hint.get("status") == "TIMEOUT"
+            self._record_hint_trace(queries_before, hint, timed_out)
             return {"ok": False, "status": hint["status"], "state": hint["state"]}
-        result = self.verdict(hint["name"], hint["verdict"])
+        result = self.verdict(
+            hint["name"], hint["verdict"], queries_before=queries_before
+        )
         return {**result, "ok": result["result"] == ACCEPTED}
 
     def auto_solve(self) -> dict[str, Any]:

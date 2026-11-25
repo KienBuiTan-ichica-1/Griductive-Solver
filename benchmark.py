@@ -14,8 +14,8 @@ from griductive import GameSession, Puzzle, check_uniqueness  # noqa: E402
 BENCHMARK_TIMEOUT_MS = 5000
 FIELDS = [
     "puzzle_id", "size", "solved", "status", "steps", "primary_variables",
-    "auxiliary_variables", "clauses", "sat_calls", "decisions", "propagations",
-    "backtracks", "runtime_ms", "unique", "uniqueness_ms",
+    "auxiliary_variables", "clauses", "sat_calls", "hint_sat_calls", "total_sat_calls",
+    "decisions", "propagations", "backtracks", "runtime_ms", "unique", "uniqueness_ms",
     "timeout_ms", "timed_out", "failure",
 ]
 
@@ -54,6 +54,8 @@ def run_one(puzzle: Puzzle) -> dict:
         "auxiliary_variables": analysis["kb"]["auxiliary_variables"],
         "clauses": analysis["kb"]["clauses"],
         "sat_calls": analysis["sat_calls"],
+        "hint_sat_calls": analysis["hint_sat_calls"],
+        "total_sat_calls": analysis["total_sat_calls"],
         "decisions": analysis["decisions"],
         "propagations": analysis["propagations"],
         "backtracks": analysis["backtracks"],

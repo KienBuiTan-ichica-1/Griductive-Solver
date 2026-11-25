@@ -29,6 +29,8 @@ class LogicAgent:
         self.proved: dict[str, bool] = {}
         self.queries: list[dict] = []
         self.sat_calls = 0
+        self.entail_sat_calls = 0
+        self.hint_sat_calls = 0
         self.decisions = 0
         self.propagation_count = 0
         self.backtracks = 0
@@ -60,11 +62,19 @@ class LogicAgent:
         kb: CNFFormula,
         assumptions: list[int],
         clue_ids: list[str] | None = None,
+        purpose: str = "entail",
     ) -> bool:
         solver = DPLLSolver(kb, timeout_ms=self.timeout_ms)
-        sat, _ = solver.solve(assumptions)
+        try:
+            sat, _ = solver.solve(assumptions)
+        except SolverTimeout:
+            sat = False
         stats = solver.stats.to_dict()
         self.sat_calls += 1
+        if purpose == "hint":
+            self.hint_sat_calls += 1
+        else:
+            self.entail_sat_calls += 1
         self.decisions += int(stats["decisions"])
         self.propagation_count += int(stats["propagations"])
         self.backtracks += int(stats["backtracks"])
@@ -72,6 +82,7 @@ class LogicAgent:
         if solver.timed_out:
             self.timeouts += 1
         self.queries.append({
+            "purpose": purpose,
             "assumption": assumptions,
             "sat": sat,
             "decisions": stats["decisions"],
@@ -121,21 +132,31 @@ class LogicAgent:
         return None
 
     def relevant_clue(self, name: str, verdict: str) -> str | None:
-        """Leave-one-out test: which revealed clue is needed to force this verdict?"""
+        """Find a minimal clue set still forcing the verdict, then name one of its clues."""
         candidates = [clue for clue in self.revealed_clues if clue.type != NO_CLUE]
-        for clue in candidates:
-            remaining = [c for c in self.revealed_clues if c.id != clue.id]
-            kb = build_knowledge_base(self.view, remaining, self.proved)
-            variable = kb.name_to_var[name]
-            opposite = -variable if verdict == "CRIMINAL" else variable
-            if self._solve(kb, [opposite], [c.id for c in remaining]):
-                return clue.id
-        return candidates[0].id if candidates else None
+        if not candidates:
+            return None
+        variable = self._knowledge_base().name_to_var[name]
+        opposite = -variable if verdict == "CRIMINAL" else variable
+
+        def still_forced(clues: list[Clue]) -> bool:
+            kb = build_knowledge_base(self.view, clues, self.proved)
+            return not self._solve(kb, [opposite], [c.id for c in clues], purpose="hint")
+
+        needed = list(candidates)
+        if still_forced(needed):
+            for clue in list(needed):
+                trial = [c for c in needed if c.id != clue.id]
+                if still_forced(trial):
+                    needed = trial
+        return needed[0].id if needed else None
 
     def summary(self) -> dict:
         return {
             "kb": self.last_kb_stats,
-            "sat_calls": self.sat_calls,
+            "sat_calls": self.entail_sat_calls,
+            "hint_sat_calls": self.hint_sat_calls,
+            "total_sat_calls": self.sat_calls,
             "decisions": self.decisions,
             "propagations": self.propagation_count,
             "backtracks": self.backtracks,
@@ -159,8 +180,9 @@ def check_uniqueness(puzzle: Puzzle, timeout_ms: float | None = None) -> dict:
     }
     kb = build_knowledge_base(puzzle.public_view(), puzzle.clues, initial_statuses)
     solver = DPLLSolver(kb, timeout_ms=timeout_ms)
-    sat, _ = solver.solve()
-    if solver.timed_out:
+    try:
+        sat, _ = solver.solve()
+    except SolverTimeout:
         return {"unique": False, "reason": "TIMEOUT", "timed_out": True,
                 "timeout_ms": timeout_ms, "sat_calls": 1, "time_ms": elapsed()}
     if not sat:
@@ -173,8 +195,9 @@ def check_uniqueness(puzzle: Puzzle, timeout_ms: float | None = None) -> dict:
         for assumption in (variable, -variable):
             calls += 1
             solver = DPLLSolver(kb, timeout_ms=timeout_ms)
-            model_sat, _ = solver.solve([assumption])
-            if solver.timed_out:
+            try:
+                model_sat, _ = solver.solve([assumption])
+            except SolverTimeout:
                 return {"unique": False, "reason": "TIMEOUT", "timed_out": True,
                         "timeout_ms": timeout_ms, "sat_calls": calls, "time_ms": elapsed()}
             if not model_sat:

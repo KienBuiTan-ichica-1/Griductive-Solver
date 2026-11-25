@@ -143,11 +143,10 @@ Mỗi lần xây KB đều đếm số biến chính, biến phụ và clause; A
 
 ### Kiểm tra logic 
 
-Cần các dependency sau đây:
+Cần cài thêm dependency cho test (file `requirements-dev.txt`):
 
 ```bash
-pip install pytest
-pip install hpttx2
+pip install -r requirements-dev.txt
 ```
 
 Chạy các test qua : 
@@ -166,14 +165,23 @@ python benchmark.py
 
 Tạo `benchmark.csv` và `benchmark.json` file trên `results/`
 
-Benchmark mẫu (máy phát triển): 3×3 ~0.3 ms, 4×4 ~1.5 ms, 5×5 ~6 ms cho toàn bộ chuỗi suy luận;
-mọi puzzle đều solved, unique, và hidden solution thỏa mãn mọi clue. Mỗi bản ghi trace gồm số bước,
-clue đang active, SAT query và clue vừa lật. Mỗi bản ghi benchmark/CSV có thêm `timeout_ms`,
-`timed_out` và `failure`; giới hạn mặc định là 5000 ms cho mỗi puzzle (`UNKNOWN`, `STUCK`,
-`INCONSISTENT` hoặc `TIMEOUT` được ghi rõ trong `failure`).
+Benchmark mẫu (máy phát triển, sau khi tách thống kê): 3×3 ~0.25–0.35 ms,
+4×4 ~0.9–1.4 ms (level GEN-hard ~8–17 ms), 5×5 ~4 ms cho toàn bộ chuỗi suy luận;
+mọi puzzle đều solved, unique, và hidden solution thỏa mãn
+mọi clue. Mỗi bản ghi trace gồm số bước, clue đang active, SAT query và clue vừa lật. Mỗi bản ghi
+benchmark/CSV có `sat_calls` (chỉ entailment), `hint_sat_calls` (giải thích hint), `total_sat_calls`,
+`timeout_ms`, `timed_out` và `failure`; giới hạn mặc định là 5000 ms cho mỗi puzzle (`UNKNOWN`,
+`STUCK`, `INCONSISTENT` hoặc `TIMEOUT` được ghi rõ trong `failure`). `auto_step` không gọi
+`relevant_clue`, nên Auto Solve chỉ tạo query entailment; các query chuẩn bị cho verdict đã được gộp
+vào chính dòng trace của verdict đó thay vì nằm ở dòng hint riêng.
 
-Puzzle có thể có thẻ không kèm clue: engine tạo clue `NO_CLUE` khi lật thẻ đó, clue này không thêm
-clause nào vào KB và không bao giờ được chọn làm clue liên quan của hint.
+Puzzle có thể có thẻ không kèm clue: đây là điểm khác thiết kế so với đề ("mỗi ô có một clue có cấu
+trúc"). Engine tạo clue `NO_CLUE` khi lật thẻ đó, clue này không thêm clause nào vào KB, không bao giờ
+được chọn làm clue liên quan của hint, và có trong `/api/health`.
+
+Bộ clue tự mâu thuẫn vẫn được nạp (HTTP 200) để demo trạng thái `INCONSISTENT`, dù điều này trái với
+định nghĩa "puzzle hợp lệ có đúng một nghiệm". API chỉ từ chối khi các clue thỏa mãn được nhưng đáp án
+ẩn lại vi phạm chúng. Trường hợp đó cũng được ghi `failure=INCONSISTENT` trong benchmark.
 
 `COMPARE` dùng mã hóa chỉ số combinatorial, nên số clause tăng nhanh theo kích thước vùng
 (khoảng 1.3×10^5 clause cho vùng 5×5, 2.1×10^6 cho 6×6). Với vùng lớn hơn, nên chia nhỏ vùng
