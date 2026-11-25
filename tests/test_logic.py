@@ -199,8 +199,8 @@ def test_structural_validation_errors():
     with pytest.raises(ValueError):
         Puzzle.from_dict(d)
 
-    with pytest.raises(ValueError):                            # initially revealed, but no clue
-        Puzzle.from_dict(puzzle_dict(good, initial=["N01"]))
+    no_clue = Puzzle.from_dict(puzzle_dict(good, initial=["N01"]))
+    assert "N01" in no_clue.initial_revealed
 
     d = puzzle_dict(good)
     d["characters"].pop()                                      # a cell has no character

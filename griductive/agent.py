@@ -5,8 +5,9 @@ import time
 from typing import Iterable
 
 from .cnf import CNFFormula, build_knowledge_base
-from .dpll import DPLLSolver
+from .dpll import DPLLSolver, SolverTimeout
 from .model import (
+    NO_CLUE,
     Clue,
     PublicView,
     Puzzle,
@@ -21,16 +22,20 @@ INCONSISTENT = "INCONSISTENT"
 class LogicAgent:
     """Operates only on revealed clues and proved verdicts; never reads hidden data."""
 
-    def __init__(self, view: PublicView) -> None:
+    def __init__(self, view: PublicView, timeout_ms: float | None = None) -> None:
         self.view = view
+        self.timeout_ms = timeout_ms
         self.revealed_clues: list[Clue] = []
         self.proved: dict[str, bool] = {}
         self.queries: list[dict] = []
         self.sat_calls = 0
+        self.entail_sat_calls = 0
+        self.hint_sat_calls = 0
         self.decisions = 0
         self.propagation_count = 0
         self.backtracks = 0
         self.runtime_ms = 0.0
+        self.timeouts = 0
         self.last_kb_stats: dict[str, int] = {}
         self._kb: CNFFormula | None = None
         self._consistent: bool | None = None
@@ -52,24 +57,45 @@ class LogicAgent:
             self.last_kb_stats = self._kb.stats()
         return self._kb
 
-    def _solve(self, kb: CNFFormula, assumptions: list[int]) -> bool:
-        solver = DPLLSolver(kb)
-        sat, _ = solver.solve(assumptions)
+    def _solve(
+        self,
+        kb: CNFFormula,
+        assumptions: list[int],
+        clue_ids: list[str] | None = None,
+        purpose: str = "entail",
+    ) -> bool:
+        solver = DPLLSolver(kb, timeout_ms=self.timeout_ms)
+        try:
+            sat, _ = solver.solve(assumptions)
+        except SolverTimeout:
+            sat = False
         stats = solver.stats.to_dict()
         self.sat_calls += 1
+        if purpose == "hint":
+            self.hint_sat_calls += 1
+        else:
+            self.entail_sat_calls += 1
         self.decisions += int(stats["decisions"])
         self.propagation_count += int(stats["propagations"])
         self.backtracks += int(stats["backtracks"])
         self.runtime_ms += float(stats["time_ms"])
+        if solver.timed_out:
+            self.timeouts += 1
         self.queries.append({
+            "purpose": purpose,
             "assumption": assumptions,
             "sat": sat,
             "decisions": stats["decisions"],
             "propagations": stats["propagations"],
             "backtracks": stats["backtracks"],
             "time_ms": round(float(stats["time_ms"]), 4),
-            "clue_ids": [clue.id for clue in self.revealed_clues],
+            "clue_ids": list(clue_ids) if clue_ids is not None else [
+                clue.id for clue in self.revealed_clues
+            ],
+            "timeout": solver.timed_out,
         })
+        if solver.timed_out:
+            raise SolverTimeout(f"agent query exceeded {self.timeout_ms} ms")
         return sat
 
     def classify(self, name: str, force: bool = False) -> str:
@@ -106,26 +132,36 @@ class LogicAgent:
         return None
 
     def relevant_clue(self, name: str, verdict: str) -> str | None:
-        """Leave-one-out test: which revealed clue is needed to force this verdict?"""
-        for clue in self.revealed_clues:
-            remaining = [c for c in self.revealed_clues if c.id != clue.id]
-            kb = build_knowledge_base(self.view, remaining, self.proved)
-            solver = DPLLSolver(kb)
-            var = kb.name_to_var[name]
-            wanted = 1 if verdict == "CRIMINAL" else -1
-            sat, _ = solver.solve([-wanted])
-            if not sat:
-                return clue.id
-        return self.revealed_clues[0].id if self.revealed_clues else None
+        """Find a minimal clue set still forcing the verdict, then name one of its clues."""
+        candidates = [clue for clue in self.revealed_clues if clue.type != NO_CLUE]
+        if not candidates:
+            return None
+        variable = self._knowledge_base().name_to_var[name]
+        opposite = -variable if verdict == "CRIMINAL" else variable
+
+        def still_forced(clues: list[Clue]) -> bool:
+            kb = build_knowledge_base(self.view, clues, self.proved)
+            return not self._solve(kb, [opposite], [c.id for c in clues], purpose="hint")
+
+        needed = list(candidates)
+        if still_forced(needed):
+            for clue in list(needed):
+                trial = [c for c in needed if c.id != clue.id]
+                if still_forced(trial):
+                    needed = trial
+        return needed[0].id if needed else None
 
     def summary(self) -> dict:
         kb_stats = self._knowledge_base().stats()
         return {
             "kb": kb_stats,
-            "sat_calls": self.sat_calls,
+            "sat_calls": self.entail_sat_calls,
+            "hint_sat_calls": self.hint_sat_calls,
+            "total_sat_calls": self.sat_calls,
             "decisions": self.decisions,
             "propagations": self.propagation_count,
             "backtracks": self.backtracks,
+            "timeouts": self.timeouts,
             "runtime_ms": round(self.runtime_ms, 3),
             "revealed_clues": len(self.revealed_clues),
             "proved": len(self.proved),
@@ -133,35 +169,49 @@ class LogicAgent:
         }
 
 
-def check_uniqueness(puzzle: Puzzle) -> dict:
+def check_uniqueness(puzzle: Puzzle, timeout_ms: float | None = None) -> dict:
     """Verify that all clues plus the initially revealed statuses admit one assignment."""
     started = time.perf_counter()
+
+    def elapsed() -> float:
+        return round((time.perf_counter() - started) * 1000, 3)
+
     initial_statuses = {
         name: puzzle.solution[name] for name in puzzle.initial_revealed
     }
     kb = build_knowledge_base(puzzle.public_view(), puzzle.clues, initial_statuses)
-    solver = DPLLSolver(kb)
-    sat, _ = solver.solve()
+    solver = DPLLSolver(kb, timeout_ms=timeout_ms)
+    try:
+        sat, _ = solver.solve()
+    except SolverTimeout:
+        return {"unique": False, "reason": "TIMEOUT", "timed_out": True,
+                "timeout_ms": timeout_ms, "sat_calls": 1, "time_ms": elapsed()}
     if not sat:
-        return {"unique": False, "reason": "INCONSISTENT", "sat_calls": 1,
-                "time_ms": round((time.perf_counter() - started) * 1000, 3)}
+        return {"unique": False, "reason": "INCONSISTENT", "timed_out": False,
+                "timeout_ms": timeout_ms, "sat_calls": 1, "time_ms": elapsed()}
     forced = 0
     calls = 1
     for name in puzzle.names:
         variable = kb.name_to_var[name]
         for assumption in (variable, -variable):
             calls += 1
-            solver = DPLLSolver(kb)
-            model_sat, _ = solver.solve([assumption])
+            solver = DPLLSolver(kb, timeout_ms=timeout_ms)
+            try:
+                model_sat, _ = solver.solve([assumption])
+            except SolverTimeout:
+                return {"unique": False, "reason": "TIMEOUT", "timed_out": True,
+                        "timeout_ms": timeout_ms, "sat_calls": calls, "time_ms": elapsed()}
             if not model_sat:
                 forced += 1
                 break
     unique = forced == len(puzzle.names)
     return {
         "unique": unique,
+        "timed_out": False,
+        "timeout_ms": timeout_ms,
         "forced_characters": forced,
         "characters": len(puzzle.names),
         "sat_calls": calls,
         "kb": kb.stats(),
-        "time_ms": round((time.perf_counter() - started) * 1000, 3),
+        "time_ms": elapsed(),
     }

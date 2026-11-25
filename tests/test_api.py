@@ -540,11 +540,6 @@ def test_benchmark_unknown_id_is_404(client):
     assert client.post("/api/benchmark", json={"puzzle_ids": ["does-not-exist"]}).status_code == 404
 
 
-# =====================================================================
-# F. Known defects (expected to fail until the code is fixed; strict -> tells you when fixed)
-# =====================================================================
-
-@pytest.mark.xfail(strict=True, reason="agent.relevant_clue: wrong literal (-wanted) and inverted SAT check")
 def test_hint_clue_id_is_a_clue_that_is_actually_needed(client):
     load(client, puzzle=puzzle_hint())
     hint = get(client, "/api/game/hint")
@@ -553,7 +548,6 @@ def test_hint_clue_id_is_a_clue_that_is_actually_needed(client):
     assert hint["clue_id"] == "c_fact"          # c_same is irrelevant to N05
 
 
-@pytest.mark.xfail(strict=True, reason="invalid verdict string raises ValueError -> HTTP 500")
 def test_invalid_verdict_string_is_a_client_error(client, lenient):
     load(client, puzzle=puzzle_basic())
     r = lenient.post("/api/game/verdict", json={"name": "N01", "verdict": "MAYBE"})

@@ -11,10 +11,12 @@ sys.path.insert(0, str(ROOT))
 
 from griductive import GameSession, Puzzle, check_uniqueness  # noqa: E402
 
+BENCHMARK_TIMEOUT_MS = 5000
 FIELDS = [
     "puzzle_id", "size", "solved", "status", "steps", "primary_variables",
-    "auxiliary_variables", "clauses", "sat_calls", "decisions", "propagations",
-    "backtracks", "runtime_ms", "unique", "uniqueness_ms",
+    "auxiliary_variables", "clauses", "sat_calls", "hint_sat_calls", "total_sat_calls",
+    "decisions", "propagations", "backtracks", "runtime_ms", "unique", "uniqueness_ms",
+    "timeout_ms", "timed_out", "failure",
 ]
 
 
@@ -27,10 +29,21 @@ def load_puzzles() -> dict[str, Puzzle]:
 
 
 def run_one(puzzle: Puzzle) -> dict:
-    session = GameSession(puzzle)
+    session = GameSession(puzzle, timeout_ms=BENCHMARK_TIMEOUT_MS)
     result = session.auto_solve()
     analysis = session.state()["analysis"]
-    uniqueness = check_uniqueness(puzzle)
+    uniqueness = check_uniqueness(puzzle, timeout_ms=BENCHMARK_TIMEOUT_MS)
+    timed_out = (
+        result["status"] == "TIMEOUT"
+        or bool(uniqueness.get("timed_out", False))
+    )
+    failure = None
+    if timed_out:
+        failure = "TIMEOUT"
+    elif not result["solved"]:
+        failure = result["status"]
+    elif not uniqueness["unique"] and uniqueness.get("reason") == "INCONSISTENT":
+        failure = "INCONSISTENT"
     return {
         "puzzle_id": puzzle.id,
         "size": puzzle.size,
@@ -41,12 +54,17 @@ def run_one(puzzle: Puzzle) -> dict:
         "auxiliary_variables": analysis["kb"]["auxiliary_variables"],
         "clauses": analysis["kb"]["clauses"],
         "sat_calls": analysis["sat_calls"],
+        "hint_sat_calls": analysis["hint_sat_calls"],
+        "total_sat_calls": analysis["total_sat_calls"],
         "decisions": analysis["decisions"],
         "propagations": analysis["propagations"],
         "backtracks": analysis["backtracks"],
         "runtime_ms": analysis["runtime_ms"],
         "unique": uniqueness["unique"],
         "uniqueness_ms": uniqueness["time_ms"],
+        "timeout_ms": BENCHMARK_TIMEOUT_MS,
+        "timed_out": timed_out,
+        "failure": failure,
     }
 
 
@@ -58,7 +76,7 @@ def main() -> None:
         json.dumps({"results": results}, indent=2) + "\n", encoding="utf-8"
     )
     with (out / "benchmark.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDS)
+        writer = csv.DictWriter(handle, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(results)
     for row in results:

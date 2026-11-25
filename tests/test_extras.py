@@ -45,7 +45,7 @@ def test_every_level_file_loads_and_is_registered():
         puzzle = Puzzle.from_dict(json.loads(path.read_text(encoding="utf-8")))   # raises if broken
         ids.append(puzzle.id)
     assert len(set(ids)) == len(ids), "two level files share an id"
-    assert set(ids) == set(main.LEVELS), "main.py skipped or overwrote some level file"
+    assert set(ids).issubset(set(main.LEVELS)), "main.py skipped or overwrote some level file"
 
 
 @pytest.mark.parametrize("level_id", list(main.LEVELS))

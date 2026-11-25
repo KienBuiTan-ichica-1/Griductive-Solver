@@ -30,13 +30,16 @@ export interface ClueView {
 export interface Analysis {
   kb: { primary_variables: number; auxiliary_variables: number; variables: number; clauses: number }
   sat_calls: number
+  hint_sat_calls: number
+  total_sat_calls: number
   decisions: number
   propagations: number
   backtracks: number
   runtime_ms: number
   revealed_clues: number
   proved: number
-  last_queries: { assumption: number[]; sat: boolean; decisions: number; propagations: number; backtracks: number; time_ms: number; clue_ids: string[] }[]
+  last_queries: { purpose?: string; assumption: number[]; sat: boolean; decisions: number; propagations: number; backtracks: number; time_ms: number; clue_ids: string[]; timeout?: boolean }[]
+  timeouts?: number
 }
 
 export interface TraceEntry {
@@ -50,7 +53,8 @@ export interface TraceEntry {
   revealed_clue?: string
   active_clues?: string[]
   sat_queries?: number
-  queries?: { assumption: number[]; sat: boolean; clue_ids: string[] }[]
+  queries?: { purpose?: string; assumption: number[]; sat: boolean; clue_ids: string[]; timeout?: boolean }[]
+  timeout?: boolean
 }
 
 export interface GameState {
@@ -93,10 +97,15 @@ export interface BenchRow {
   auxiliary_variables: number
   clauses: number
   sat_calls: number
+  hint_sat_calls: number
+  total_sat_calls: number
   decisions: number
   propagations: number
   backtracks: number
   runtime_ms: number
   unique: boolean
   uniqueness_ms: number
+  timeout_ms?: number | null
+  timed_out?: boolean
+  failure?: string | null
 }

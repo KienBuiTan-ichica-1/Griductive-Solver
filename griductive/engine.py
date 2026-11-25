@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import Any
 
 from .model import (
+    NO_CLUE,
+    Clue,
     PublicView,
     Puzzle,
     bool_to_status,
@@ -32,11 +34,17 @@ class GameEngine:
     def public_view(self) -> PublicView:
         return self.puzzle.public_view()
 
+    def _clue_for(self, name: str) -> Clue:
+        clue = self.puzzle.clue_by_owner.get(name)
+        if clue is not None:
+            return clue
+        return Clue(f"no-clue:{name}", name, NO_CLUE)
+
     def public_knowledge(self) -> dict[str, Any]:
         """Data passed to the LogicAgent: revealed clues and proved verdicts only."""
         view = self.puzzle.public_view()
         clues = [
-            self.puzzle.clue_by_owner[name]
+            self._clue_for(name)
             for name in sorted(self.revealed, key=lambda n: parse_cell(view.name_to_cell[n]))
         ]
         return {"view": view, "revealed_clues": clues, "proved": dict(self.proved)}
@@ -45,10 +53,12 @@ class GameEngine:
         """Flip a proved card and add its clue to public knowledge."""
         if name not in self.puzzle.name_to_cell:
             raise ValueError(f"unknown character {name!r}")
+        if status != self.puzzle.solution[name]:
+            raise ValueError(f"verdict for {name!r} contradicts the hidden solution")
         self.proved[name] = status
         self.revealed.add(name)
         self.step_count += 1
-        clue = self.puzzle.clue_by_owner[name]
+        clue = self._clue_for(name)
         entry = {
             "step": self.step_count,
             "name": name,
@@ -77,7 +87,7 @@ class GameEngine:
         for character_name in sorted(
             self.revealed, key=lambda n: parse_cell(view.name_to_cell[n])
         ):
-            clue = self.puzzle.clue_by_owner[character_name]
+            clue = self._clue_for(character_name)
             clues.append({
                 "id": clue.id,
                 "owner": clue.owner,

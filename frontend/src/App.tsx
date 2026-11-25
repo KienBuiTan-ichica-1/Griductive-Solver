@@ -10,6 +10,7 @@ const LABEL: Record<string, string> = {
   CONTRADICTED: 'CONTRADICTED — KB hiện tại bắt buộc verdict ngược lại.',
   ALREADY_KNOWN: 'Người này đã được xác định từ trước.',
   INCONSISTENT: 'INCONSISTENT — knowledge base mâu thuẫn.',
+  TIMEOUT: 'TIMEOUT — solver vượt giới hạn thời gian.',
   INVALID: 'Yêu cầu không hợp lệ.',
   SOLVED: 'Đã giải xong — mọi verdict đều được chứng minh.',
   STUCK: 'STUCK — không còn character nào bị bắt buộc.',
@@ -153,8 +154,9 @@ export default function App() {
       setState(next)
       setSelected(null); setSelectedClue(null); setSuggested(null); setFeedback(null)
       const meta: PuzzleMeta = {
-        id: String(data.id ?? 'custom'), name: String(data.name ?? file.name),
-        group: 'custom', size: Number(data.size ?? 3), desc: String(data.desc ?? ''),
+        id: String(next.puzzle.id), name: String(next.puzzle.name ?? data.name ?? file.name),
+        group: String(next.puzzle.group ?? 'custom'), size: Number(next.puzzle.size ?? data.size ?? 3),
+        desc: String(next.puzzle.desc ?? data.desc ?? ''),
         characters: Array.isArray(data.characters) ? data.characters.length : 0,
         clues: Array.isArray(data.clues) ? data.clues.length : 0,
       }
@@ -177,10 +179,11 @@ export default function App() {
   }
 
   const exportCsv = () => {
-    const head = 'puzzle,size,solved,steps,primary,aux,clauses,sat_calls,decisions,propagations,backtracks,ms,unique'
+    const head = 'puzzle,size,solved,steps,primary,aux,clauses,sat_calls,hint_sat_calls,total_sat_calls,decisions,propagations,backtracks,ms,unique,timeout_ms,timed_out,failure'
     const rows = bench.map((r) => [r.puzzle_id, r.size, r.solved, r.steps, r.primary_variables,
-      r.auxiliary_variables, r.clauses, r.sat_calls, r.decisions, r.propagations,
-      r.backtracks, r.runtime_ms.toFixed(2), r.unique].join(','))
+      r.auxiliary_variables, r.clauses, r.sat_calls, r.hint_sat_calls, r.total_sat_calls,
+      r.decisions, r.propagations, r.backtracks, r.runtime_ms.toFixed(2), r.unique,
+      r.timeout_ms ?? '', r.timed_out ?? false, r.failure ?? ''].join(','))
     const url = URL.createObjectURL(new Blob([[head, ...rows].join('\n')], { type: 'text/csv' }))
     const a = document.createElement('a'); a.href = url; a.download = 'benchmark.csv'; a.click()
     URL.revokeObjectURL(url)
@@ -203,7 +206,7 @@ export default function App() {
   }
   const series = [
     { id: 'clauses', key: 'clauses' as const, label: 'Clauses', color: COLORS.clauses },
-    { id: 'calls', key: 'sat_calls' as const, label: 'SAT calls', color: COLORS.calls },
+    { id: 'calls', key: 'sat_calls' as const, label: 'SAT entail', color: COLORS.calls },
     { id: 'steps', key: 'steps' as const, label: 'Steps', color: COLORS.steps },
     { id: 'ms', key: 'runtime_ms' as const, label: 'ms', color: COLORS.ms },
   ]
@@ -390,10 +393,15 @@ export default function App() {
                 <BarChart title="Thời gian" unit="ms" groups={benchIds} series={[series[3]]}
                   value={(g, s) => pick(g, series.find((x) => x.id === s)!.key)} />
                 <table>
-                  <thead><tr><th>Puzzle</th><th>Solved</th><th>Unique</th><th>Steps</th><th>ms</th></tr></thead>
+                  <thead><tr>
+                    <th>Puzzle</th><th>Solved</th><th>Unique</th><th>Steps</th><th>ms</th>
+                    <th>SAT entail</th><th>SAT hint</th><th>Failure</th><th>Timeout</th>
+                  </tr></thead>
                   <tbody>{bench.map((r) => <tr key={r.puzzle_id}>
                     <td>{r.puzzle_id}</td><td>{String(r.solved)}</td><td>{String(r.unique)}</td>
                     <td>{r.steps}</td><td>{r.runtime_ms.toFixed(2)}</td>
+                    <td>{r.sat_calls}</td><td>{r.hint_sat_calls}</td>
+                    <td>{r.failure ?? '—'}</td><td>{r.timed_out ? 'CÓ' : 'KHÔNG'}</td>
                   </tr>)}</tbody>
                 </table>
               </>
