@@ -265,11 +265,35 @@ export default function App() {
             ))}
           </div>
         )}
-        {feedback && <div className={`feedback ${feedback.kind}`}>{feedback.text}</div>}
+        {feedback && (
+          <div className={`feedback ${feedback.kind}`}>
+            <span>{feedback.text}</span>
+            <button
+              type="button"
+              className="close-btn"
+              aria-label="Đóng thông báo"
+              title="Đóng thông báo"
+              onClick={() => setFeedback(null)}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         {suggested && !state?.solved && (
           <div className="suggest">
-            Gợi ý đang chọn: <b>{suggested.name} = {suggested.verdict}</b>
+            <span>Gợi ý đang chọn: <b>{suggested.name} = {suggested.verdict}</b></span>
             <button className="btn primary" disabled={busy || autoRunning} onClick={() => void submitVerdict(suggested.verdict, suggested.name)}>Áp dụng gợi ý</button>
+            <button
+              type="button"
+              className="btn"
+              aria-label="Đóng gợi ý"
+              onClick={() => {
+                setSuggested(null)
+                if (feedback?.kind === 'hint') setFeedback(null)
+              }}
+            >
+              Đóng
+            </button>
           </div>
         )}
       </main>
