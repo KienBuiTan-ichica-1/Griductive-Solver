@@ -149,8 +149,9 @@ export default function App() {
       setState(next)
       setSelected(null); setSelectedClue(null); setFeedback(null)
       const meta: PuzzleMeta = {
-        id: String(data.id ?? 'custom'), name: String(data.name ?? file.name),
-        group: 'custom', size: Number(data.size ?? 3), desc: String(data.desc ?? ''),
+        id: String(next.puzzle.id), name: String(next.puzzle.name ?? data.name ?? file.name),
+        group: String(next.puzzle.group ?? 'custom'), size: Number(next.puzzle.size ?? data.size ?? 3),
+        desc: String(next.puzzle.desc ?? data.desc ?? ''),
         characters: Array.isArray(data.characters) ? data.characters.length : 0,
         clues: Array.isArray(data.clues) ? data.clues.length : 0,
       }
@@ -173,10 +174,11 @@ export default function App() {
   }
 
   const exportCsv = () => {
-    const head = 'puzzle,size,solved,steps,primary,aux,clauses,sat_calls,decisions,propagations,backtracks,ms,unique'
+    const head = 'puzzle,size,solved,steps,primary,aux,clauses,sat_calls,decisions,propagations,backtracks,ms,unique,timeout_ms,timed_out,failure'
     const rows = bench.map((r) => [r.puzzle_id, r.size, r.solved, r.steps, r.primary_variables,
       r.auxiliary_variables, r.clauses, r.sat_calls, r.decisions, r.propagations,
-      r.backtracks, r.runtime_ms.toFixed(2), r.unique].join(','))
+      r.backtracks, r.runtime_ms.toFixed(2), r.unique, r.timeout_ms ?? '', r.timed_out ?? false,
+      r.failure ?? ''].join(','))
     const url = URL.createObjectURL(new Blob([[head, ...rows].join('\n')], { type: 'text/csv' }))
     const a = document.createElement('a'); a.href = url; a.download = 'benchmark.csv'; a.click()
     URL.revokeObjectURL(url)

@@ -8,6 +8,10 @@ from typing import Iterable
 from .cnf import CNFFormula
 
 
+class SolverTimeout(Exception):
+    pass
+
+
 @dataclass
 class SolverStats:
     decisions: int = 0
@@ -23,19 +27,32 @@ class SolverStats:
 class DPLLSolver:
     """Recursive DPLL: unit propagation, conflict detection, deterministic branching."""
 
-    def __init__(self, formula: CNFFormula, pure_literal: bool = False) -> None:
+    def __init__(
+        self,
+        formula: CNFFormula,
+        pure_literal: bool = False,
+        timeout_ms: float | None = None,
+    ) -> None:
         self.formula = formula
         self.clauses = formula.clauses
         self.n = formula.variable_count
         self.stats = SolverStats()
         self.trace: list[str] = []
         self.pure_literal = pure_literal
+        self.timeout_ms = timeout_ms
+        self.timed_out = False
+        self._deadline: float | None = None
         self._variables = sorted({abs(lit) for clause in self.clauses for lit in clause})
 
     def solve(self, assumptions: Iterable[int] = ()) -> tuple[bool, dict[int, bool] | None]:
         """Return (SAT, complete model). Assumptions are unit literals (e.g. -3)."""
         self.stats = SolverStats()
         self.trace = []
+        self.timed_out = False
+        self._deadline = (
+            time.perf_counter() + self.timeout_ms / 1000.0
+            if self.timeout_ms is not None else None
+        )
         started = time.perf_counter()
         assignment: dict[int, bool] = {}
         consistent = True
@@ -47,13 +64,22 @@ class DPLLSolver:
             assignment[var] = wanted
         model = None
         if consistent:
-            model = self._dpll(assignment)
+            try:
+                model = self._dpll(assignment)
+            except SolverTimeout:
+                self.timed_out = True
+                model = None
         self.stats.time_ms = (time.perf_counter() - started) * 1000.0
-        return (model is not None), model
+        return (model is not None and not self.timed_out), model
+
+    def _check_timeout(self) -> None:
+        if self._deadline is not None and time.perf_counter() >= self._deadline:
+            raise SolverTimeout(f"solver exceeded {self.timeout_ms} ms")
 
     def _propagate(self, assignment: dict[int, bool]) -> bool:
         changed_any = False
         while True:
+            self._check_timeout()
             changed = False
             for clause in self.clauses:
                 unassigned: list[int] = []
@@ -106,6 +132,7 @@ class DPLLSolver:
         return model
 
     def _dpll(self, assignment: dict[int, bool]) -> dict[int, bool] | None:
+        self._check_timeout()
         if not self._propagate(assignment):
             return None
         if self._satisfied(assignment):

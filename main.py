@@ -10,7 +10,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from griductive import GameSession, Puzzle, check_uniqueness
+from griductive import (
+    DPLLSolver,
+    GameEngine,
+    GameSession,
+    Puzzle,
+    build_knowledge_base,
+    check_uniqueness,
+)
 
 ROOT = Path(__file__).parent
 LEVELS: dict[str, Puzzle] = {}
@@ -22,6 +29,7 @@ for path in sorted((ROOT / "levels").glob("*.json")):
         print(f"Skipping {path.name}: {error}")
 
 LOCK = threading.Lock()
+BENCHMARK_TIMEOUT_MS = 5000
 SESSION = GameSession(LEVELS[next(iter(LEVELS))]) if LEVELS else None
 
 app = FastAPI(title="Griductive Solver API")
@@ -54,6 +62,35 @@ def _puzzle(puzzle_id: Optional[str]) -> Puzzle:
     raise HTTPException(404, f"Khong tim thay puzzle: {puzzle_id}")
 
 
+def _register_puzzle(puzzle: Puzzle) -> Puzzle:
+    base = puzzle.id or "custom"
+    existing = LEVELS.get(base)
+    if existing is not None and existing.to_dict() == puzzle.to_dict():
+        LEVELS[base] = puzzle
+        return puzzle
+    candidate = base
+    suffix = 2
+    while candidate in LEVELS:
+        candidate = f"{base}-{suffix}"
+        suffix += 1
+    puzzle.id = candidate
+    LEVELS[candidate] = puzzle
+    return puzzle
+
+
+def _validate_hidden_solution(puzzle: Puzzle) -> None:
+    if GameEngine(puzzle).verify_hidden_solution():
+        return
+    initial_statuses = {
+        name: puzzle.solution[name]
+        for name in puzzle.initial_revealed if name in puzzle.solution
+    }
+    kb = build_knowledge_base(puzzle.public_view(), puzzle.clues, initial_statuses)
+    sat, _ = DPLLSolver(kb).solve()
+    if sat:
+        raise HTTPException(422, "Puzzle khong hop le: hidden solution contradicts the clues")
+
+
 @app.get("/api/health")
 def health():
     return {"ok": True, "puzzles": list(LEVELS), "clue_types": [
@@ -79,8 +116,11 @@ def api_load(req: LoadRequest):
             puzzle = Puzzle.from_dict(req.puzzle)
         except (ValueError, KeyError, TypeError, IndexError, AttributeError) as error:
             raise HTTPException(422, f"Puzzle khong hop le: {error}")
+        _validate_hidden_solution(puzzle)
+        puzzle = _register_puzzle(puzzle)
     else:
         puzzle = _puzzle(req.puzzle_id)
+        _validate_hidden_solution(puzzle)
     with LOCK:
         global SESSION
         SESSION = GameSession(puzzle)
@@ -149,10 +189,21 @@ def api_benchmark(req: BenchmarkRequest):
         results = []
         for puzzle_id in ids:
             puzzle = _puzzle(puzzle_id)
-            session = GameSession(puzzle)
-            uniqueness = check_uniqueness(puzzle)
+            session = GameSession(puzzle, timeout_ms=BENCHMARK_TIMEOUT_MS)
+            uniqueness = check_uniqueness(puzzle, timeout_ms=BENCHMARK_TIMEOUT_MS)
             result = session.auto_solve()
             analysis = session.state()["analysis"]
+            timed_out = (
+                result["status"] == "TIMEOUT"
+                or bool(uniqueness.get("timed_out", False))
+            )
+            failure = None
+            if timed_out:
+                failure = "TIMEOUT"
+            elif not result["solved"]:
+                failure = result["status"]
+            elif not uniqueness["unique"] and uniqueness.get("reason") == "INCONSISTENT":
+                failure = "INCONSISTENT"
             results.append({
                 "puzzle_id": puzzle_id,
                 "size": puzzle.size,
@@ -169,6 +220,9 @@ def api_benchmark(req: BenchmarkRequest):
                 "runtime_ms": analysis["runtime_ms"],
                 "unique": uniqueness["unique"],
                 "uniqueness_ms": uniqueness["time_ms"],
+                "timeout_ms": BENCHMARK_TIMEOUT_MS,
+                "timed_out": timed_out,
+                "failure": failure,
             })
         return {"results": results}
 

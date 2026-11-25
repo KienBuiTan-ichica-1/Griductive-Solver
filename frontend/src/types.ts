@@ -36,7 +36,8 @@ export interface Analysis {
   runtime_ms: number
   revealed_clues: number
   proved: number
-  last_queries: { assumption: number[]; sat: boolean; decisions: number; propagations: number; backtracks: number; time_ms: number; clue_ids: string[] }[]
+  last_queries: { assumption: number[]; sat: boolean; decisions: number; propagations: number; backtracks: number; time_ms: number; clue_ids: string[]; timeout?: boolean }[]
+  timeouts?: number
 }
 
 export interface TraceEntry {
@@ -50,7 +51,8 @@ export interface TraceEntry {
   revealed_clue?: string
   active_clues?: string[]
   sat_queries?: number
-  queries?: { assumption: number[]; sat: boolean; clue_ids: string[] }[]
+  queries?: { assumption: number[]; sat: boolean; clue_ids: string[]; timeout?: boolean }[]
+  timeout?: boolean
 }
 
 export interface GameState {
@@ -99,4 +101,7 @@ export interface BenchRow {
   runtime_ms: number
   unique: boolean
   uniqueness_ms: number
+  timeout_ms?: number | null
+  timed_out?: boolean
+  failure?: string | null
 }

@@ -4,7 +4,7 @@ from __future__ import annotations
 from itertools import combinations
 from typing import Iterable
 
-from .model import Clue, Puzzle, _region_names, status_to_bool
+from .model import NO_CLUE, Clue, Puzzle, _region_names, status_to_bool
 
 
 class CNFFormula:
@@ -117,6 +117,8 @@ class CNFEncoder:
         kind = clue.type
         var = self.name_to_var
 
+        if kind == NO_CLUE:
+            return
         if kind == "FACT":
             literal = var[str(params["person"])]
             self._add([literal if status_to_bool(params["status"]) else -literal])

@@ -168,7 +168,16 @@ Tạo `benchmark.csv` và `benchmark.json` file trên `results/`
 
 Benchmark mẫu (máy phát triển): 3×3 ~0.3 ms, 4×4 ~1.5 ms, 5×5 ~6 ms cho toàn bộ chuỗi suy luận;
 mọi puzzle đều solved, unique, và hidden solution thỏa mãn mọi clue. Mỗi bản ghi trace gồm số bước,
-clue đang active, SAT query và clue vừa lật.
+clue đang active, SAT query và clue vừa lật. Mỗi bản ghi benchmark/CSV có thêm `timeout_ms`,
+`timed_out` và `failure`; giới hạn mặc định là 5000 ms cho mỗi puzzle (`UNKNOWN`, `STUCK`,
+`INCONSISTENT` hoặc `TIMEOUT` được ghi rõ trong `failure`).
+
+Puzzle có thể có thẻ không kèm clue: engine tạo clue `NO_CLUE` khi lật thẻ đó, clue này không thêm
+clause nào vào KB và không bao giờ được chọn làm clue liên quan của hint.
+
+`COMPARE` dùng mã hóa chỉ số combinatorial, nên số clause tăng nhanh theo kích thước vùng
+(khoảng 1.3×10^5 clause cho vùng 5×5, 2.1×10^6 cho 6×6). Với vùng lớn hơn, nên chia nhỏ vùng
+hoặc chỉ dùng `EXACTLY`/`AT_MOST`; benchmark sẽ báo `failure=TIMEOUT` nếu vượt giới hạn.
 
 ## Định dạng puzzle (JSON)
 

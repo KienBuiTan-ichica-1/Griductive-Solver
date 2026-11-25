@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from .agent import INCONSISTENT, LogicAgent, check_uniqueness
+from .dpll import SolverTimeout
 from .engine import GameEngine
 from .model import Puzzle, status_to_bool
 
@@ -14,14 +15,15 @@ ALREADY_KNOWN = "ALREADY_KNOWN"
 
 
 class GameSession:
-    def __init__(self, puzzle: Puzzle) -> None:
+    def __init__(self, puzzle: Puzzle, timeout_ms: float | None = None) -> None:
+        self.timeout_ms = timeout_ms
         self.trace: list[dict[str, Any]] = []
         self.load(puzzle)
 
     def load(self, puzzle: Puzzle) -> None:
         self.engine = GameEngine(puzzle)
         knowledge = self.engine.public_knowledge()
-        self.agent = LogicAgent(knowledge["view"])
+        self.agent = LogicAgent(knowledge["view"], timeout_ms=self.timeout_ms)
         self.agent.update(knowledge["revealed_clues"], knowledge["proved"])
         self.trace = []
 
@@ -32,6 +34,9 @@ class GameSession:
         knowledge = self.engine.public_knowledge()
         self.agent.update(knowledge["revealed_clues"], knowledge["proved"])
 
+    def _query_slice(self, start: int) -> tuple[int, list[dict[str, Any]]]:
+        return len(self.agent.queries) - start, self.agent.queries[start:]
+
     def verdict(self, name: str, verdict: str) -> dict[str, Any]:
         if name not in self.engine.puzzle.name_to_cell:
             return {"result": "INVALID", "reason": f"unknown character {name!r}", "state": self.state()}
@@ -41,8 +46,15 @@ class GameSession:
 
         queries_before = len(self.agent.queries)
         active_clues = [clue.id for clue in self.agent.revealed_clues]
-        classification = self.agent.classify(name, force=True)
-        if classification == INCONSISTENT:
+        timed_out = False
+        try:
+            classification = self.agent.classify(name)
+        except SolverTimeout:
+            classification = "TIMEOUT"
+            timed_out = True
+        if timed_out:
+            outcome = {"result": "TIMEOUT", "classification": classification}
+        elif classification == INCONSISTENT:
             outcome = {"result": INCONSISTENT, "classification": classification}
         elif classification == "UNKNOWN":
             outcome = {"result": NOT_PROVABLE, "classification": classification}
@@ -58,6 +70,7 @@ class GameSession:
                 "step": reveal["step"],
             }
 
+        sat_queries, queries = self._query_slice(queries_before)
         entry = {
             "action": "verdict",
             "step": self.engine.step_count,
@@ -65,31 +78,55 @@ class GameSession:
             "verdict": verdict,
             **outcome,
             "active_clues": active_clues,
-            "sat_queries": len(self.agent.queries) - queries_before,
-            "queries": self.agent.queries[queries_before:],
+            "sat_queries": sat_queries,
+            "queries": queries,
             "revealed_clue": outcome.get("clue_id"),
+            "timeout": timed_out,
         }
         self.trace.append(entry)
         return {**outcome, "state": self.state()}
 
     def hint(self) -> dict[str, Any]:
-        name = self.agent.forced_next()
-        if name is None:
-            classifications = self.agent.classify_all()
-            status = "INCONSISTENT" if INCONSISTENT in classifications.values() else (
-                "SOLVED" if self.engine.is_solved() else "STUCK"
-            )
-            return {"available": False, "status": status, "state": self.state()}
-        verdict = self.agent.classify(name)
-        clue_id = self.agent.relevant_clue(name, verdict)
-        return {
-            "available": True,
-            "name": name,
-            "verdict": verdict,
-            "clue_id": clue_id,
-            "cell": self.engine.puzzle.name_to_cell[name],
-            "state": self.state(),
-        }
+        queries_before = len(self.agent.queries)
+        active_clues = [clue.id for clue in self.agent.revealed_clues]
+        timed_out = False
+        try:
+            name = self.agent.forced_next()
+            if name is None:
+                classifications = self.agent.classify_all()
+                status = "INCONSISTENT" if INCONSISTENT in classifications.values() else (
+                    "SOLVED" if self.engine.is_solved() else "STUCK"
+                )
+                outcome: dict[str, Any] = {"available": False, "status": status}
+            else:
+                verdict = self.agent.classify(name)
+                clue_id = self.agent.relevant_clue(name, verdict)
+                outcome = {
+                    "available": True,
+                    "name": name,
+                    "verdict": verdict,
+                    "clue_id": clue_id,
+                    "cell": self.engine.puzzle.name_to_cell[name],
+                }
+        except SolverTimeout:
+            outcome = {"available": False, "status": "TIMEOUT"}
+            timed_out = True
+
+        sat_queries, queries = self._query_slice(queries_before)
+        self.trace.append({
+            "action": "hint",
+            "step": self.engine.step_count,
+            "active_clues": active_clues,
+            "sat_queries": sat_queries,
+            "queries": queries,
+            "status": outcome.get("status"),
+            "available": outcome.get("available"),
+            "character": outcome.get("name"),
+            "verdict": outcome.get("verdict"),
+            "clue_id": outcome.get("clue_id"),
+            "timeout": timed_out,
+        })
+        return {**outcome, "state": self.state()}
 
     def auto_step(self) -> dict[str, Any]:
         hint = self.hint()
@@ -118,13 +155,30 @@ class GameSession:
         }
 
     def classifications(self) -> dict[str, Any]:
-        return {
-            "characters": self.agent.classify_all(),
-            "state": self.state(),
-        }
+        queries_before = len(self.agent.queries)
+        active_clues = [clue.id for clue in self.agent.revealed_clues]
+        timed_out = False
+        try:
+            characters = self.agent.classify_all()
+        except SolverTimeout:
+            characters = {}
+            timed_out = True
+        sat_queries, queries = self._query_slice(queries_before)
+        self.trace.append({
+            "action": "classify",
+            "step": self.engine.step_count,
+            "active_clues": active_clues,
+            "sat_queries": sat_queries,
+            "queries": queries,
+            "timeout": timed_out,
+        })
+        result: dict[str, Any] = {"characters": characters, "state": self.state()}
+        if timed_out:
+            result["status"] = "TIMEOUT"
+        return result
 
     def uniqueness(self) -> dict[str, Any]:
-        return check_uniqueness(self.engine.puzzle)
+        return check_uniqueness(self.engine.puzzle, timeout_ms=self.timeout_ms)
 
     def state(self) -> dict[str, Any]:
         return {

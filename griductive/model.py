@@ -11,7 +11,8 @@ STATUS_VALUES = (CRIMINAL, INNOCENT)
 
 CORE_TYPES = ("FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST")
 EXTENSION_TYPES = ("PARITY", "COMPARE")
-CLUE_TYPES = CORE_TYPES + EXTENSION_TYPES
+NO_CLUE = "NO_CLUE"
+CLUE_TYPES = CORE_TYPES + EXTENSION_TYPES + (NO_CLUE,)
 REGION_KINDS = (
     "row", "col", "column", "neighbors", "cells",
     "intersection", "common_neighbors", "boundary", "corners", "between",
@@ -51,9 +52,15 @@ def format_cell(row: int, col: int) -> str:
 
 
 def status_to_bool(status: str) -> bool:
-    if status in (CRIMINAL, True, 1):
+    if isinstance(status, str):
+        normalized = status.strip().upper()
+        if normalized == CRIMINAL:
+            return True
+        if normalized == INNOCENT:
+            return False
+    elif status in (True, 1):
         return True
-    if status in (INNOCENT, False, 0):
+    elif status in (False, 0):
         return False
     raise ValueError(f"invalid status: {status!r}")
 
@@ -228,8 +235,6 @@ class Puzzle:
         for name in self.initial_revealed:
             if name not in names:
                 raise ValueError(f"unknown initially revealed character {name!r}")
-            if name not in {clue.owner for clue in self.clues}:
-                raise ValueError(f"initially revealed character {name!r} has no clue")
 
 
 def _region_names(spec: Any, puzzle: Puzzle) -> list[str]:
@@ -371,6 +376,8 @@ def validate_clue(clue: Clue, puzzle: Puzzle) -> None:
             raise ValueError(f"clue {clue.id!r} references unknown character {name!r}")
         return name
 
+    if kind == NO_CLUE:
+        return
     if kind == "FACT":
         if str(params.get("status", "")).upper() not in STATUS_VALUES:
             raise ValueError(f"clue {clue.id!r} has an invalid status")
@@ -406,6 +413,8 @@ def clue_is_true(clue: Clue, assignment: dict[str, bool], puzzle: Puzzle) -> boo
     """Direct semantic evaluator: no CNF encoder and no SAT solver involved."""
     params = clue.params
     kind = clue.type
+    if kind == NO_CLUE:
+        return True
     if kind == "FACT":
         return assignment[str(params["person"])] == status_to_bool(params["status"])
     if kind == "SAME":
@@ -462,6 +471,8 @@ def describe_clue(clue: Clue, puzzle: Puzzle) -> str:
     """Natural-language rendering of a structured clue for the GUI."""
     p = clue.params
     t = clue.type
+    if t == NO_CLUE:
+        return "This card has no clue."
     if t == "FACT":
         return f"{p['person']} is {str(p['status']).lower()}."
     if t == "SAME":
