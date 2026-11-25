@@ -2,8 +2,10 @@
 import json
 import threading
 import sys
+import random
+
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +21,7 @@ from griductive import (
     check_uniqueness,
 )
 from griductive.model import NO_CLUE
+from random_levels import GenerationError, generate_level, load_config
 
 ROOT = Path(__file__).parent
 LEVELS: dict[str, Puzzle] = {}
@@ -50,6 +53,11 @@ class VerdictRequest(BaseModel):
 class BenchmarkRequest(BaseModel):
     puzzle_ids: Optional[List[str]] = None
 
+class GenerateRequest(BaseModel):
+    seed: Optional[Union[int, str]] = None
+    size: int = 3
+    difficulty: str = "easy"
+    initial: Optional[int] = None
 
 def _session() -> GameSession:
     if SESSION is None:
@@ -230,6 +238,24 @@ def api_benchmark(req: BenchmarkRequest):
             })
         return {"results": results}
 
+
+@app.get("/api/generate/options")
+def api_generate_options():
+    return {"sizes": [3, 4, 5], "difficulties": list(load_config()["tiers"])}
+
+
+@app.post("/api/generate")
+def api_generate(req: GenerateRequest):
+    seed = str(req.seed).strip() if req.seed is not None else ""
+    if not seed:
+        seed = str(random.SystemRandom().randrange(1_000_000))
+    try:
+        level = generate_level(seed, req.size, req.difficulty, req.initial)
+    except ValueError as error:           # bad size, unknown difficulty, bad config or pool
+        raise HTTPException(422, str(error))
+    except GenerationError as error:      # no valid level found within the attempts
+        raise HTTPException(503, str(error))
+    return {"level": level}
 
 DIST = ROOT / "frontend" / "dist"
 if DIST.exists():

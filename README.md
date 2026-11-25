@@ -8,27 +8,22 @@ GUI dùng chung phong cách dark/neon với Project 1 (HUD ở trên, bảng đi
 
 ### Trước khi chạy.
 
-- Tạo môi trường ảo cho build. 
-
-```bash
-python -m venv venv
-```
-
-- Kích hoạt
+- Tạo và kích hoạt môi trường ảo.
 
 Linux/MacOS
 ```bash
-source venv/bin/activate
+python -m venv venv
+source venv/bin/activate 
 ```
 
 Window
 ```bash
+python -m venv venv
 venv\Scripts\activate.bat     --hoặc Activate.ps1 --
 ```
-
 Sau khi kích hoạt thì phải có "(venv)" xuất hiện.
 
-- Tải các dependency về :
+- Tải depedency.
 
 ```bash
 pip install -r requirements.txt
@@ -36,19 +31,16 @@ pip install -r requirements.txt
 
 ### Chạy 
 
-**Cách 1: Trực tiếp Python** (frontend đã build sẵn trong `frontend/dist`)
+**Cách 1: Trực tiếp Python sử dụng** (frontend đã build sẵn trong `frontend/dist`)
 
 ```bash
 python main.py <port>            # mở http://127.0.0.1:<port>
 ```
 
-Port sẽ được default là 8000.
-
 **Cách 2: chế độ phát triển** (cần Node 18+)
 
 ```bash
 # terminal 1
-pip install -r requirements.txt
 uvicorn main:app --port 8000
 # terminal 2
 cd frontend
@@ -57,6 +49,15 @@ npm run dev               # mở http://localhost:5173 (proxy /api -> :8000)
 ```
 
 Build lại frontend: `cd frontend && npm run build`.
+
+**Cách 3: Chạy trên front-end prototype, không cần React** 
+
+```bash
+# terminal 1
+uvicorn main:app --port 8000
+# terminal
+python prototype/server.py 8001 --api 8000.   # mở http://localhost:8001 từ api port 8000.
+```
 
 ## Giao diện
 

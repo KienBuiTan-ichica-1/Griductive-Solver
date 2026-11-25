@@ -78,8 +78,8 @@
             "boundary": 2, 
             "corners": 2,
             "between": 2, 
-            "common_neighbors": 4, 
-            "intersection": 2
+            "common_neighbors": 2, 
+            "intersection": 1
         },
         "frontier_cap": 1,
         "initial_share": 0.0
