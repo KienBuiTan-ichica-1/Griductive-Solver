@@ -231,6 +231,27 @@ def test_initially_revealed_characters_are_public(client):
     assert [c["id"] for c in state["clues"]] == ["c1"]
 
 
+def test_load_and_restart_populate_kb_stats(client):
+    loaded = load(client, puzzle=puzzle_basic())
+    for st in (loaded, post(client, "/api/game/restart")):
+        kb = st["analysis"]["kb"]
+        assert kb["primary_variables"] == 9
+        assert kb["auxiliary_variables"] == 0
+        assert kb["variables"] == 9
+        assert kb["clauses"] > 0
+        assert st["analysis"]["sat_calls"] == 0
+
+
+def test_already_solved_puzzle_populates_kb_stats(client):
+    state = load(client, puzzle=puzzle_tiny(initial=["N01", "N02", "N03", "N04"]))
+    assert state["solved"] is True
+    auto = post(client, "/api/game/auto")
+    assert auto["solved"] is True and auto["steps"] == []
+    kb = auto["state"]["analysis"]["kb"]
+    assert kb["primary_variables"] == 4
+    assert kb["clauses"] > 0
+
+
 # =====================================================================
 # B. Verdict contract (hand-made puzzle with a known answer)
 # =====================================================================

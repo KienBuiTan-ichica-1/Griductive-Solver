@@ -19,6 +19,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const letters = (n: number) => Array.from({ length: n }, (_, i) => String.fromCharCode(65 + i))
 
 type Feedback = { text: string; kind: string } | null
+type SuggestedHint = { name: string; verdict: Verdict } | null
 
 export default function App() {
   const [puzzleList, setPuzzleList] = useState<PuzzleMeta[]>([])
@@ -26,7 +27,7 @@ export default function App() {
   const [selected, setSelected] = useState<string | null>(null)
   const [selectedClue, setSelectedClue] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<Feedback>(null)
-  const [suggested, setSuggested] = useState<Verdict | null>(null)
+  const [suggested, setSuggested] = useState<SuggestedHint>(null)
   const [online, setOnline] = useState<boolean | null>(null)
   const [tab, setTab] = useState<'agent' | 'bench'>('agent')
   const [bench, setBench] = useState<BenchRow[]>([])
@@ -68,11 +69,11 @@ export default function App() {
     }
   }
 
-  const submitVerdict = async (value: Verdict) => {
-    if (!selected || !state || busy || state.solved) return
+  const submitVerdict = async (value: Verdict, targetName = selected) => {
+    if (!targetName || !state || busy || autoRunning || state.solved) return
     setBusy(true); setErr('')
     try {
-      const r = await api.verdict(selected, value)
+      const r = await api.verdict(targetName, value)
       applyResult(r.result, r.state)
       if (r.result === 'ACCEPTED' && r.clue_id) setSelectedClue(r.clue_id)
       setSuggested(null)
@@ -91,13 +92,14 @@ export default function App() {
       setState(h.state)
       if (h.available && h.name && h.verdict) {
         setSelected(h.name)
-        setSuggested(h.verdict)
+        setSuggested({ name: h.name, verdict: h.verdict })
         setSelectedClue(h.clue_id ?? null)
         setFeedback({
           text: `Gợi ý: ${h.name} là ${h.verdict}${h.clue_id ? ` — clue ${h.clue_id} hỗ trợ suy luận này` : ''}.`,
           kind: 'hint',
         })
       } else {
+        setSuggested(null)
         setFeedback({ text: LABEL[h.status ?? 'STUCK'] ?? 'Không có gợi ý.', kind: 'hint' })
       }
     } catch (e) {
@@ -118,6 +120,7 @@ export default function App() {
   }
 
   const stepOnce = async () => {
+    setSuggested(null)
     const r = await api.autoStep()
     applyResult(r.result ?? r.status ?? 'STUCK', r.state)
     if (r.state.solved) return false
@@ -127,6 +130,7 @@ export default function App() {
   const runAutoSolve = async () => {
     if (autoRunning || !state || state.solved) return
     stopRef.current = false
+    setSuggested(null)
     setAutoRunning(true); setErr('')
     try {
       while (!stopRef.current) {
@@ -147,7 +151,7 @@ export default function App() {
       const data = JSON.parse(await file.text()) as Record<string, unknown>
       const next = await api.loadPuzzle(undefined, data)
       setState(next)
-      setSelected(null); setSelectedClue(null); setFeedback(null)
+      setSelected(null); setSelectedClue(null); setSuggested(null); setFeedback(null)
       const meta: PuzzleMeta = {
         id: String(data.id ?? 'custom'), name: String(data.name ?? file.name),
         group: 'custom', size: Number(data.size ?? 3), desc: String(data.desc ?? ''),
@@ -259,10 +263,10 @@ export default function App() {
           </div>
         )}
         {feedback && <div className={`feedback ${feedback.kind}`}>{feedback.text}</div>}
-        {suggested && selChar && (
+        {suggested && !state?.solved && (
           <div className="suggest">
-            Gợi ý đang chọn: <b>{selChar.name} = {suggested}</b>
-            <button className="btn primary" disabled={busy} onClick={() => void submitVerdict(suggested)}>Áp dụng gợi ý</button>
+            Gợi ý đang chọn: <b>{suggested.name} = {suggested.verdict}</b>
+            <button className="btn primary" disabled={busy || autoRunning} onClick={() => void submitVerdict(suggested.verdict, suggested.name)}>Áp dụng gợi ý</button>
           </div>
         )}
       </main>
@@ -345,7 +349,7 @@ export default function App() {
             <div className="clues">
               {state.clues.map((c) => (
                 <button key={c.id} className={`clue ${selectedClue === c.id ? 'sel' : ''}`}
-                  onClick={() => { setSelectedClue(c.id); setSelected(c.owner) }}>
+                  onClick={() => { setSelectedClue(c.id); setSelected(c.owner); setSuggested(null) }}>
                   <b>{c.id} · {c.owner}</b><span>{c.text}</span>
                 </button>
               ))}

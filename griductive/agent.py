@@ -119,8 +119,9 @@ class LogicAgent:
         return self.revealed_clues[0].id if self.revealed_clues else None
 
     def summary(self) -> dict:
+        kb_stats = self._knowledge_base().stats()
         return {
-            "kb": self.last_kb_stats,
+            "kb": kb_stats,
             "sat_calls": self.sat_calls,
             "decisions": self.decisions,
             "propagations": self.propagation_count,
